@@ -29,37 +29,37 @@ const { State } = require('vry')
 
 // define entities, by name and with defaults
 const User = State.create('user', {
-	id: null
-	email: null,
-	name: ''
+  id: null
+  email: null,
+  name: ''
 })
 
 // the factory accepts attributes and returns an instance 
 const homer = User.factory({
-	name: 'Homer Simpson'
+  name: 'Homer Simpson'
 })
 
 Invariant(Immutable.Map.isMap(homer), 'instance is an Immutable.Map, plain and simple')
 
 // add your own methods
 User.hasEmail = function(user) {
-	// make sure an actual user was passed
-	Invariant(User.instanceOf(user), 'User required to check whether user has an email')
-	
-	return !!user.get('email')
+  // make sure an actual user was passed
+  Invariant(User.instanceOf(user), 'User required to check whether user has an email')
+  
+  return !!user.get('email')
 }
 
 const Post = State.create('post', {
-	title: 'Untitled',
-	author: null
+  title: 'Untitled',
+  author: null
 })
 
 const homersPost = Post.factory({
-	// nest entities
-	author: homer,
+  // nest entities
+  author: homer,
 
-	// use any type of Immutable.Iterable
-	tags: Immutable.Set(['homer', 'springfield', 'yellow'])
+  // use any type of Immutable.Iterable
+  tags: Immutable.Set(['homer', 'springfield', 'yellow'])
 })
 
 // serialize
