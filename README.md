@@ -77,5 +77,5 @@ In addition to `State`:
 - `Graph` / `Ref` making it easier to model state as graphs instead of trees
 - `Collection` abstracting basic collection behaviour like storing lists of entities under multiple indexes, merging behaviour, etc.
 
-	[redux]: http://redux.js.org/
-	[immutablejs]: https://facebook.github.io/immutable-js/
+[redux]: http://redux.js.org/
+[immutablejs]: https://facebook.github.io/immutable-js/
