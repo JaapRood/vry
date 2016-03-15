@@ -6,7 +6,13 @@ Defining models using [Immutable.js][immutablejs], making it easier to define de
 
 This documentation is still incredibly sparse, but I'm tired of copying / pasting this between projects. Having a look at or running the tests is probably your best bet to get an idea of how it's supposed to work. While experimental the basic behaviours have been developed throughout a sequence of various projects, so **semver will be respected**.
 
-To run tests run in project root:
+Use in your project:
+
+```
+npm install --save vry
+```
+
+To run tests in vry root:
 
 ```
 npm install --dev
