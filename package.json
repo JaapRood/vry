@@ -1,8 +1,8 @@
 {
   "name": "vry",
   "version": "1.0.0",
-  "description": "Immutable data model made easier",
-  "main": "index.js",
+  "description": "Data modeling with Immutable.js designed for use with Redux-like architectures",
+  "main": "lib/index.js",
   "scripts": {
     "test": "npm run compile && tape -r babel-register test/index.js | tap-spec",
     "compile": "babel ./src -d ./lib",
@@ -13,7 +13,7 @@
     "model",
     "backbone",
     "react",
-    "flux"
+    "redux"
   ],
   "author": "JaapRood <jaap@jaaprood.nl>",
   "license": "ISC",
