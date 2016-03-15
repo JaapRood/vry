@@ -120,6 +120,8 @@ internals.State.prototype.serialize = function(state, omitCid=true) {
 internals.State.prototype.merge = function(state, data) {
 	if (internals.State.isState(state)) {
 		data = data.remove(internals.props.cid);
+	} else {
+		delete data.cid;
 	}
 
 	return state.merge(data);
