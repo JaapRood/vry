@@ -1,0 +1,40 @@
+{
+  "name": "vry",
+  "version": "1.0.0",
+  "description": "Immutable data model made easier",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run compile && tape -r babel-register test/index.js | tap-spec",
+    "compile": "babel ./src -d ./lib",
+    "prepublish": "npm test"
+  },
+  "keywords": [
+    "immutable",
+    "model",
+    "backbone",
+    "react",
+    "flux"
+  ],
+  "author": "JaapRood <jaap@jaaprood.nl>",
+  "license": "ISC",
+  "dependencies": {
+    "babel-preset-es2015": "^6.3.13",
+    "immutable": "^3.7.6",
+    "lodash.isarray": "^3.0.4",
+    "lodash.isfunction": "^3.0.6",
+    "lodash.isplainobject": "^3.2.0",
+    "lodash.uniqueid": "^3.0.0",
+    "shortid": "^2.2.4"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.6.5",
+    "babel-register": "^6.7.2",
+    "tap-spec": "^4.1.1",
+    "tape": "^4.4.0"
+  },
+  "babel": {
+    "presets": [
+      "babel-preset-es2015"
+    ]
+  }
+}
