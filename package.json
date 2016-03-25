@@ -26,6 +26,7 @@
     "lodash.isarray": "^3.0.4",
     "lodash.isfunction": "^3.0.6",
     "lodash.isplainobject": "^3.2.0",
+    "lodash.isstring": "^4.0.1",
     "lodash.uniqueid": "^3.0.0",
     "shortid": "^2.2.4"
   },
