@@ -139,6 +139,21 @@ Test('state.factory - parse', function(t) {
 
 });
 
+Test('state.instanceOf', function(t) {
+	t.plan(3);
+
+	var stateA = State.create('state-a');
+	var stateB = State.create('state-b');
+
+	var instanceA = stateA.factory();
+	var instanceB = stateB.factory();
+
+	t.doesNotThrow(function() {
+		t.equal(stateA.instanceOf(instanceA), true, 'returns true for state instances created by it');
+		t.equal(stateA.instanceOf(instanceB), false, 'returns true for state instances created by other states');
+	}, 'accepts any value');
+});
+
 Test('state.serialize', function(t) {
 	t.plan(7 + 3);
 
