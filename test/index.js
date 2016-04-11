@@ -139,6 +139,42 @@ Test('state.factory - parse', function(t) {
 
 });
 
+Test('state.instanceOf', function(t) {
+	t.plan(3);
+
+	var stateA = State.create('state-a');
+	var stateB = State.create('state-b');
+
+	var instanceA = stateA.factory();
+	var instanceB = stateB.factory();
+
+	t.doesNotThrow(function() {
+		t.equal(stateA.instanceOf(instanceA), true, 'returns true for state instances created by it');
+		t.equal(stateA.instanceOf(instanceB), false, 'returns true for state instances created by other states');
+	}, 'accepts any value');
+});
+
+Test('state.collectionOf', function(t) {
+	t.plan(4);
+
+	var stateA = State.create('state-a');
+	var stateB = State.create('state-b');
+
+	var instanceA = stateA.factory();
+	var instanceB = stateB.factory();
+
+	t.doesNotThrow(function() {
+		var collectionA = Immutable.List([instanceA]);
+		var collectionB = Immutable.List([instanceB]);
+		var collectionMixed = Immutable.List([instanceA, instanceB]);
+
+		t.equal(stateA.collectionOf(collectionA), true, 'returns true for immutable collections that contain instances of that specific state');
+		t.equal(stateA.collectionOf(collectionB), false, 'returns true for immutable collections that contain instances of other states');
+		t.equal(stateA.collectionOf(collectionMixed), false, 'returns false for immutable collections where instances of specific state or mixed with other values');
+
+	}, 'accepts any value');
+});
+
 Test('state.serialize', function(t) {
 	t.plan(7 + 3);
 

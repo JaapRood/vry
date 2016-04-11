@@ -103,6 +103,11 @@ internals.State.prototype.instanceOf = function(state) {
 		state.get(internals.props.name) === this._spec.name;
 };
 
+internals.State.prototype.collectionOf = function(maybeCollection) {
+	return Immutable.Iterable.isIterable(maybeCollection) &&
+		maybeCollection.every(this.instanceOf.bind(this));
+};
+
 internals.State.prototype.parse = function(attrs) {
 	return attrs;
 };

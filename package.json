@@ -1,6 +1,6 @@
 {
   "name": "vry",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Data modeling with Immutable.js designed for use with Redux-like architectures",
   "main": "lib/index.js",
   "scripts": {
