@@ -16,7 +16,7 @@ Test('KeyPath.isKeyPath', function(t) {
 });
 
 Test('KeyPath.parse', function(t) {
-	t.plan(3 + 3);
+	t.plan(3 + 3 + 2);
 
 	t.doesNotThrow(function() {
 		const stringPath = 'a-single-property';
@@ -36,4 +36,11 @@ Test('KeyPath.parse', function(t) {
 		t.ok(KeyPath.isKeyPath(keyPath), 'returns a KeyPath');
 		t.deepEqual(arrayPath, keyPath.toArray(), 'returned key path is the array converted to an Immutable Iterable');
 	}, 'accepts an array of strings');
+
+	t.doesNotThrow(function() {
+		const keyPathA = KeyPath.parse(['a', 'b', 'c']);
+		const keyPathB = KeyPath.parse(keyPathA);
+
+		t.ok(keyPathA.equals(keyPathB), 'returns untouched key path when passing a valid key path');
+	}, 'accepts a KeyPath')
 });
