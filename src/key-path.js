@@ -14,5 +14,5 @@ exports.parse = function(path) {
 
 exports.isKeyPath = function(maybeKeyPath) {
 	return Immutable.Iterable.isIndexed(maybeKeyPath) && 
-		_maybeKeyPath.every(_isString);
+		maybeKeyPath.every(_isString);
 };
