@@ -72,3 +72,62 @@ Test('Ref.resolveCollection', function(t) {
 		, 'returns undefined for values that could not be found in the source state with the path of the reference');
 	}, 'accepts a collection of Ref instances and immutable source state');
 });
+
+Test('Ref.replaceIn', function(t) {
+	t.plan(3 + 2 + 2);
+
+	const source = Immutable.Map({
+		a: Immutable.Map({
+			b: 'bb'
+		}),
+		c: 'cc'
+	})
+
+	const subject = Immutable.Map({
+		id: 'some-subject',
+		letterA: Ref.create(['a', 'b']),
+
+		letters: Immutable.Map({
+			a: Ref.create(['a', 'b']),
+			c: Ref.create('c')
+		}),
+
+		notARef: 'other-value'
+	})
+
+	t.doesNotThrow(function() {
+		const populatedSubject = Ref.replaceIn(source, subject, 'letterA');
+		const expected = subject.set('letterA', source.getIn(['a', 'b']));
+
+		t.ok(
+			Immutable.Map.isMap(subject) &&
+			populatedSubject.get('id') === subject.get('id')
+		, 'returns an updated version of the subject');
+
+		t.ok(
+			populatedSubject.equals(expected)
+		, 'returned subject has reference at path replaced by value that reference pointed to');
+
+	}, 'accepts immutable source, immutable subject and a path to a reference in the subject');
+
+	t.doesNotThrow(function() {
+		const populatedSubject = Ref.replaceIn(source, subject, 'letters');
+		const expected = subject.set('letters', Immutable.Map({
+			a: source.getIn(['a', 'b']),
+			c: source.get('c')
+		}))
+
+		t.ok(
+			populatedSubject.equals(expected)
+		, 'returned subject has collection of references at path replaced by map of the values it was referencing');
+
+	}, 'accepts immutable source, immutable subject and a path to a collection of references in the subject');
+
+	t.doesNotThrow(function() {
+		const populatedSubject = Ref.replaceIn(source, subject, 'notARef');
+
+		t.ok(
+			populatedSubject.equals(subject)
+		, 'value of subject at path that is not a reference is not replaced');
+	}, 'accepts immutable source, immutable subject and path to a value that is not a reference or collection of references');
+});
