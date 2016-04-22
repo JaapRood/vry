@@ -19,16 +19,16 @@ internals.Ref.create = function(path) {
 	});
 }
 
-internals.Ref.resolve = function(ref, state) {
+internals.Ref.resolve = function(ref, source) {
 	Invariant(internals.Ref.instanceOf(ref), 'Ref is required to resolve a ref');
-	Invariant(State.isState(state), 'Root state is required to resolve a ref');
+	Invariant(Immutable.Iterable.isIterable(source), 'Source state is required to resolve a ref');
 
-	return state.getIn(ref.get('path'));
+	return source.getIn(ref.get('path'));
 }
 
-internals.Ref.resolveCollection = function(refs, state) {
+internals.Ref.resolveCollection = function(refs, source) {
 	Invariant(internals.Ref.collectionOf(ref), 'Collection of Ref instances is required to resolve a collection of refs');
-	Invariant(State.isState(state), 'Root state is required to resolve a collection of refs');
+	Invariant(Immutable.Iterable.isIterable(source), 'Source state is required to resolve a collection of refs');
 
 	return refs.map(ref => internals.Ref.resolve(ref, state));
 }
