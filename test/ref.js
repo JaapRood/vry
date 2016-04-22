@@ -37,3 +37,38 @@ Test('Ref.resolve', function(t) {
 		t.ok(_isUndefined(Ref.resolve(invalidRef, source)), 'returns undefined for refs with paths that do not exist in the source state');
 	}, 'accepts a Ref instance and an immutable iterable');
 });
+
+Test('Ref.resolveCollection', function(t) {
+	t.plan(4);
+
+	const source = Immutable.Map({
+		a: Immutable.Map({
+			b: 'bb'
+		}),
+		c: 'cc'
+	})
+
+	const refs = Immutable.List([
+		Ref.create(['a', 'b']),
+		Ref.create('c'),
+		Ref.create('d')
+	])
+
+	t.doesNotThrow(function() {
+		const resolvedRefs = Ref.resolveCollection(refs, source);
+
+		t.ok(
+			Immutable.List.isList(resolvedRefs) &&
+			resolvedRefs.count() === refs.count()
+		, 'returns a map of the collection of references passed');
+
+		t.ok(
+			resolvedRefs.get(0) === 'bb' &&
+			resolvedRefs.get(1) === 'cc'
+		, 'returns the value of the source state that the reference path points to');
+
+		t.ok(
+			_isUndefined(resolvedRefs.get(2))
+		, 'returns undefined for values that could not be found in the source state with the path of the reference');
+	}, 'accepts a collection of Ref instances and immutable source state');
+});

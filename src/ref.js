@@ -27,10 +27,10 @@ internals.Ref.resolve = function(ref, source) {
 }
 
 internals.Ref.resolveCollection = function(refs, source) {
-	Invariant(internals.Ref.collectionOf(ref), 'Collection of Ref instances is required to resolve a collection of refs');
+	Invariant(internals.Ref.collectionOf(refs), 'Collection of Ref instances is required to resolve a collection of refs');
 	Invariant(Immutable.Iterable.isIterable(source), 'Source state is required to resolve a collection of refs');
 
-	return refs.map(ref => internals.Ref.resolve(ref, state));
+	return refs.map(ref => internals.Ref.resolve(ref, source));
 }
 
 internals.Ref.replaceIn = function(state, subject, path) {
