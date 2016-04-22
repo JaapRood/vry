@@ -33,9 +33,9 @@ internals.Ref.resolveCollection = function(refs, source) {
 	return refs.map(ref => internals.Ref.resolve(ref, source));
 }
 
-internals.Ref.replaceIn = function(state, subject, path) {
-	Invariant(State.isState(state), 'Root state is required to replace references in subject');
-	Invariant(State.isState(subject), 'Subject state is required to replace references in subject');
+internals.Ref.replaceIn = function(source, subject, path) {
+	Invariant(Immutable.Iterable.isIterable(source), 'Root source is required to replace references in subject');
+	Invariant(Immutable.Iterable.isIterable(subject), 'Subject source is required to replace references in subject');
 
 	path = KeyPath.parse(path);
 
@@ -43,9 +43,9 @@ internals.Ref.replaceIn = function(state, subject, path) {
 
 	return subject.updateIn(path, (maybeRef) => {
 		if (internals.Ref.instanceOf(maybeRef)) {
-			return internals.Ref.resolve(maybeRef, state);
+			return internals.Ref.resolve(maybeRef, source);
 		} else if (internals.Ref.collectionOf(maybeRef)) {
-			return internals.Ref.resolveCollection(maybeRef, state);
+			return internals.Ref.resolveCollection(maybeRef, source);
 		} else {
 			return maybeRef;
 		}
