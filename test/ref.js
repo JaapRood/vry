@@ -74,30 +74,33 @@ Test('Ref.resolveCollection', function(t) {
 });
 
 Test('Ref.replaceIn', function(t) {
-	t.plan(3 + 2 + 2);
+	t.plan(3 + 2 + 2 + 2 + 2);
 
 	const source = Immutable.Map({
 		a: Immutable.Map({
-			b: 'bb'
+			b: 'bb',
+			c: Ref.create('c')
 		}),
 		c: 'cc'
 	})
 
 	const subject = Immutable.Map({
 		id: 'some-subject',
-		letterA: Ref.create(['a', 'b']),
+		letterB: Ref.create(['a', 'b']),
 
 		letters: Immutable.Map({
 			a: Ref.create(['a', 'b']),
 			c: Ref.create('c')
 		}),
 
+		letterA: Ref.create('a'),
+
 		notARef: 'other-value'
 	})
 
 	t.doesNotThrow(function() {
-		const populatedSubject = Ref.replaceIn(source, subject, 'letterA');
-		const expected = subject.set('letterA', source.getIn(['a', 'b']));
+		const populatedSubject = Ref.replaceIn(source, subject, 'letterB');
+		const expected = subject.set('letterB', source.getIn(['a', 'b']));
 
 		t.ok(
 			Immutable.Map.isMap(subject) &&
@@ -130,4 +133,26 @@ Test('Ref.replaceIn', function(t) {
 			populatedSubject.equals(subject)
 		, 'value of subject at path that is not a reference is not replaced');
 	}, 'accepts immutable source, immutable subject and path to a value that is not a reference or collection of references');
+
+	t.doesNotThrow(function() {
+		const popuplatedSubject = Ref.replaceIn(source, subject, ['letterA', 'c']);
+
+		t.equal(popuplatedSubject.getIn(['letterA', 'c']), source.get('c'), 'path can resolve through multiple references recursively');
+
+	}, 'accepts immutable source, immutable subject and path trough multiple references');
+
+	t.doesNotThrow(function() {
+		const populatedSubject = Ref.replaceIn(source, subject, ['letterB'], ['letters']);
+
+		const expected = subject.merge({
+			letters: Immutable.Map({
+				a: source.getIn(['a', 'b']),
+				c: source.get('c')
+			}),
+
+			letterB: source.getIn(['a', 'b'])
+		})
+
+		t.ok(populatedSubject.equals(expected), 'multiple path arguments all get references replaced');
+	}, 'accepts immutable source, immutable subject and multiple path arguments')
 });

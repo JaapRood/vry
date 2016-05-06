@@ -33,21 +33,35 @@ internals.Ref.resolveCollection = function(refs, source) {
 	return refs.map(ref => internals.Ref.resolve(ref, source));
 }
 
-internals.Ref.replaceIn = function(source, subject, path) {
+internals.Ref.replaceIn = function(source, subject, ...paths) {
 	Invariant(Immutable.Iterable.isIterable(source), 'Root source is required to replace references in subject');
 	Invariant(Immutable.Iterable.isIterable(subject), 'Subject source is required to replace references in subject');
 
-	path = KeyPath.parse(path);
+	paths = Immutable.List(paths).map(KeyPath.parse);
 
-	Invariant(KeyPath.isKeyPath(path), 'Path required to replace references in a subject');
+	Invariant(paths.every(KeyPath.isKeyPath), 'Path(s) required to replace references in a subject')
 
-	return subject.updateIn(path, (maybeRef) => {
-		if (internals.Ref.instanceOf(maybeRef)) {
-			return internals.Ref.resolve(maybeRef, source);
-		} else if (internals.Ref.collectionOf(maybeRef)) {
-			return internals.Ref.resolveCollection(maybeRef, source);
-		} else {
-			return maybeRef;
-		}
-	});
+	return paths.reduce((subj, path) => {
+		const nextKey = path.first();
+		const restPath = path.rest();
+
+		return subj.update(nextKey, (maybeRef) => {
+			var value;
+
+			if (internals.Ref.instanceOf(maybeRef)) {
+				value = internals.Ref.resolve(maybeRef, source);
+			} else if (internals.Ref.collectionOf(maybeRef)) {
+				value = internals.Ref.resolveCollection(maybeRef, source);
+			} else {
+				value = maybeRef;
+			}
+
+			if (restPath.count() && Immutable.Iterable.isIterable(value)) {
+				return internals.Ref.replaceIn(source, value, restPath);
+			} else {
+				return value;
+			}
+		});
+	}, subject);
+
 }
