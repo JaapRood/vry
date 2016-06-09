@@ -1,44 +1,26 @@
 var Immutable = require('immutable');
-var ShortId = require('shortid');
 var Invariant = require('invariant');
-var _isArray = require('lodash.isarray');
-var _isFunction = require('lodash.isfunction');
 var _isPlainObject = require('lodash.isplainobject');
-var _uniqueId = require('lodash.uniqueid');
 var _assign = require('lodash.assign')
+
+const Factory = require('./factory')
+const Identity = require('./identity')
+const Props = require('./props')
 
 var internals = {};
 
-internals.props = {
-	cid: '__cid',
-	name: '__stateName'
-};
+internals.props = Props // lazy refactoring, boo
 
-internals.cidPrefix = `vry-${ShortId.generate()}-`;
-internals.generateCid = function() {
-	return _uniqueId(internals.cidPrefix);
-};
-
-exports.isState = (maybeState) => {
-	return Immutable.Iterable.isIterable(maybeState) &&
-		maybeState.has(internals.props.cid) &&
-		maybeState.has(internals.props.name);
-}
+// being a state instance is the same as having an identity... for now
+exports.isState = Identity.hasIdentity
 
 exports.create = function(name, defaults) {
 	Invariant(name && (typeof name === "string"), 'Name is required to create a State');
-
-	Invariant(
-		!defaults ||
-		Immutable.Iterable.isIterable(defaults) || 
-		_isPlainObject(defaults)
-	, 'Defaults for state must be plain object or Immutable Iterable');
-
-	defaults = Immutable.Map(defaults || {});
+	Invariant(!defaults || Factory.isDefaults(defaults), 'Defaults for state must be plain object or Immutable Iterable');
 
 	const statePrototype = _assign(
-		internals.createIdentity(name),
-		internals.createFactory(defaults),
+		Identity.create(name),
+		Factory.create(defaults),
 		internals.parser, 
 		internals.merger, 
 		internals.serializer
@@ -47,95 +29,7 @@ exports.create = function(name, defaults) {
 	let state = Object.create(statePrototype)
 
 	return state
-
 };
-
-internals.createIdentity = function(name) {
-	Invariant(name && (typeof name === "string"), 'Name is required to create an identity');
-
-	const identity = {
-		getName: () =>  name,
-		hasIdentity: exports.isState,
-		instanceOf(maybeInstance) {
-			return identity.hasIdentity(maybeInstance) && maybeInstance.get(internals.props.name) === name
-		},
-		collectionOf(maybeCollection) {
-			return Immutable.Iterable.isIterable(maybeCollection) &&
-				maybeCollection.every(identity.instanceOf);
-		}
-	}
-
-	return identity
-}
-
-internals.createFactory = function(defaults) {
-	Invariant(
-		!defaults ||
-		Immutable.Iterable.isIterable(defaults) || 
-		_isPlainObject(defaults)
-	, 'Defaults for factory must be plain object or Immutable Iterable');
-
-	defaults = Immutable.Map(defaults || {});
-
-	return {
-		factory: internals.factory,
-		getDefaults: () => defaults
-	}
-}
-
-internals.factory = function(rawEntity={}, options={}) {
-	Invariant(
-		Immutable.Iterable.isIterable(rawEntity) ||
-		_isPlainObject(rawEntity)
-	, 'Raw entity, when passed, must be a plain object or Immutable Iterable');
-	Invariant(_isPlainObject(options), 'options, when passed, must be a plain object');
-	Invariant(!options.parse || _isFunction(options.parse), 'The `parse` prop of the options, when passed, must be a function');
-
-	var parse = options.parse || this.parse || ((attrs) => attrs);
-
-	// merge with with defaults and cast any nested native selections to Seqs
-	var entity = this.getDefaults().merge(Immutable.Map(rawEntity)).map((value, key) => {
-		if (Immutable.Iterable.isIterable(value)) {
-			return value;
-		}
-
-		if (_isArray(value)) {
-			return Immutable.Seq.Indexed(value);
-		}
-
-		if (_isPlainObject(value)) {
-			return Immutable.Seq.Keyed(value);
-		}
-
-		return value;
-	});
-
-	var parsedEntity = parse(entity);
-
-	Invariant(Immutable.Iterable.isIterable(parsedEntity), 'Parse function has to return an Immutable Iterable');
-
-	var metaAttrs = {
-		[internals.props.cid]: internals.generateCid(),
-		[internals.props.name]: this.getName()
-	};
-
-	return parsedEntity.toKeyedSeq().map(function(value, key) {
-		if (Immutable.Seq.isSeq(value)) {
-			// cast any Seqs into either Lists or Maps
-			let isIndexed = Immutable.Iterable.isIndexed(value)
-			let collection = isIndexed ? value.toList() : value.toMap();
-
-			return collection.map(function(value) {
-				return Immutable.fromJS(value);
-			});
-		} else {
-			// cast any nested collections to immutable data
-			return Immutable.fromJS(value);
-		}
-	}).toMap().merge(metaAttrs);
-}
-
-
 
 internals.parser = {
 	parse(attrs) {
