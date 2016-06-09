@@ -5,6 +5,7 @@ var _isArray = require('lodash.isarray');
 var _isFunction = require('lodash.isfunction');
 var _isPlainObject = require('lodash.isplainobject');
 var _uniqueId = require('lodash.uniqueid');
+var _assign = require('lodash.assign')
 
 var internals = {};
 
@@ -18,29 +19,67 @@ internals.generateCid = function() {
 	return _uniqueId(internals.cidPrefix);
 };
 
-exports = module.exports = internals.State = function(name, defaults={}) {
+exports.isState = (maybeState) => {
+	return Immutable.Iterable.isIterable(maybeState) &&
+		maybeState.has(internals.props.cid) &&
+		maybeState.has(internals.props.name);
+}
+
+exports.create = function(name, defaults) {
 	Invariant(name && (typeof name === "string"), 'Name is required to create a State');
 
 	Invariant(
+		!defaults ||
 		Immutable.Iterable.isIterable(defaults) || 
 		_isPlainObject(defaults)
 	, 'Defaults for state must be plain object or Immutable Iterable');
 
-	defaults = Immutable.Map(defaults);
+	const identity = internals.createIdentity(name, defaults)
 
-	this._spec = {
-		name: name,
-		defaults: defaults
-	};
+	const statePrototype = _assign(
+		{
+			factory: internals.factory
+		},
+		identity,
+		internals.parser, 
+		internals.merger, 
+		internals.serializer
+	)
+
+	let state = Object.create(statePrototype)
+
+	return state
+
 };
 
-exports.create = function(name, defaults) {
-	var state = new internals.State(name, defaults);
+internals.createIdentity = function(name, defaults) {
+	Invariant(name && (typeof name === "string"), 'Name is required to create an identity');
 
-	return state;
-};
+	Invariant(
+		!defaults ||
+		Immutable.Iterable.isIterable(defaults) || 
+		_isPlainObject(defaults)
+	, 'Defaults for identity must be plain object or Immutable Iterable');
 
-internals.State.prototype.factory = function(rawEntity={}, options={}) {
+	defaults = Immutable.Map(defaults || {});
+
+	const identity = {
+		getName: () =>  name,
+		getDefaults: () => defaults,
+		hasIdentity: exports.isState,
+		instanceOf(maybeInstance) {
+			return identity.hasIdentity(maybeInstance) && maybeInstance.get(internals.props.name) === name
+		},
+		collectionOf(maybeCollection) {
+			return Immutable.Iterable.isIterable(maybeCollection) &&
+				maybeCollection.every(identity.instanceOf);
+		}
+	}
+
+	return identity
+}
+
+internals.factory = function(rawEntity={}, options={}) {
 	Invariant(
 		Immutable.Iterable.isIterable(rawEntity) ||
 		_isPlainObject(rawEntity)
@@ -48,10 +87,10 @@ internals.State.prototype.factory = function(rawEntity={}, options={}) {
 	Invariant(_isPlainObject(options), 'options, when passed, must be a plain object');
 	Invariant(!options.parse || _isFunction(options.parse), 'The `parse` prop of the options, when passed, must be a function');
 
-	var parse = options.parse || this.parse;
+	var parse = options.parse || this.parse || ((attrs) => attrs);
 
 	// merge with with defaults and cast any nested native selections to Seqs
-	var entity = this._spec.defaults.merge(Immutable.Map(rawEntity)).map((value, key) => {
+	var entity = this.getDefaults().merge(Immutable.Map(rawEntity)).map((value, key) => {
 		if (Immutable.Iterable.isIterable(value)) {
 			return value;
 		}
@@ -73,7 +112,7 @@ internals.State.prototype.factory = function(rawEntity={}, options={}) {
 
 	var metaAttrs = {
 		[internals.props.cid]: internals.generateCid(),
-		[internals.props.name]: this._spec.name
+		[internals.props.name]: this.getName()
 	};
 
 	return parsedEntity.toKeyedSeq().map(function(value, key) {
@@ -90,45 +129,38 @@ internals.State.prototype.factory = function(rawEntity={}, options={}) {
 			return Immutable.fromJS(value);
 		}
 	}).toMap().merge(metaAttrs);
-};
+}
 
-internals.State.isState = function(state) {
-	return Immutable.Iterable.isIterable(state) &&
-		state.has(internals.props.cid) &&
-		state.has(internals.props.name);
-};
 
-internals.State.prototype.instanceOf = function(state) {
-	return internals.State.isState(state) && 
-		state.get(internals.props.name) === this._spec.name;
-};
 
-internals.State.prototype.collectionOf = function(maybeCollection) {
-	return Immutable.Iterable.isIterable(maybeCollection) &&
-		maybeCollection.every(this.instanceOf.bind(this));
-};
-
-internals.State.prototype.parse = function(attrs) {
-	return attrs;
-};
-
-internals.State.prototype.serialize = function(state, omitCid=true) {
-	Invariant(internals.State.isState(state), 'State instance is required to serialize state');
-
-	if (!omitCid) {
-		return state.toJS();
-	} else {
-		return state.filter((value, key) => key !== internals.props.cid).toJS();
+internals.parser = {
+	parse(attrs) {
+		return attrs
 	}
-};
+}
 
-internals.State.prototype.merge = function(state, data) {
-	if (internals.State.isState(state)) {
-		data = data.remove(internals.props.cid);
-	} else {
-		delete data.cid;
+internals.serializer = {
+	serialize(state, omitCid=true) {
+		Invariant(exports.isState(state), 'State instance is required to serialize state');
+
+		if (!omitCid) {
+			return state.toJS();
+		} else {
+			return state.filter((value, key) => key !== internals.props.cid).toJS();
+		}
 	}
+}
 
-	return state.merge(data);
-};
+internals.merger = {
+	merge(state, data) {
+		if (exports.State.isState(state)) {
+			data = data.remove(internals.props.cid);
+		} else {
+			delete data.cid;
+		}
+
+		return state.merge(data);
+	}	
+}
+
 

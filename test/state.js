@@ -9,7 +9,8 @@ Test('State.create', function(t) {
 	t.doesNotThrow(function() {
 		var state = State.create('test-state', { a: 1, b: 2});
 
-		t.ok(state instanceof State, 'returns an instance of State');
+		// t.ok(state instanceof State, 'returns an instance of State');
+		t.ok(_.isFunction(state.factory), 'return an object with a factory')
 	}, 'accepts a name for the state and an object of defaults');
 });
 
