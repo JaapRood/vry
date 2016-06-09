@@ -36,14 +36,9 @@ exports.create = function(name, defaults) {
 
 	defaults = Immutable.Map(defaults || {});
 
-	const identity = internals.createIdentity(name)
-
 	const statePrototype = _assign(
-		{
-			factory: internals.factory,
-			getDefaults: () => defaults
-		},
-		identity,
+		internals.createIdentity(name),
+		internals.createFactory(defaults),
 		internals.parser, 
 		internals.merger, 
 		internals.serializer
@@ -71,6 +66,21 @@ internals.createIdentity = function(name) {
 	}
 
 	return identity
+}
+
+internals.createFactory = function(defaults) {
+	Invariant(
+		!defaults ||
+		Immutable.Iterable.isIterable(defaults) || 
+		_isPlainObject(defaults)
+	, 'Defaults for factory must be plain object or Immutable Iterable');
+
+	defaults = Immutable.Map(defaults || {});
+
+	return {
+		factory: internals.factory,
+		getDefaults: () => defaults
+	}
 }
 
 internals.factory = function(rawEntity={}, options={}) {
