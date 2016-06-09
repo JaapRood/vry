@@ -21,9 +21,11 @@ exports.create = function(name, defaults) {
 	const statePrototype = _assign(
 		Identity.create(name),
 		Factory.create(defaults),
-		internals.parser, 
-		internals.merger, 
-		internals.serializer
+		{
+			parse: exports.parse,
+			serialize: exports.serialize,
+			merge: exports.merge
+		}
 	)
 
 	let state = Object.create(statePrototype)
@@ -31,34 +33,26 @@ exports.create = function(name, defaults) {
 	return state
 };
 
-internals.parser = {
-	parse(attrs) {
-		return attrs
+exports.parse = (attrs) => {
+	return attrs
+}
+
+exports.serialize = (state, omitCid=true) => {
+	Invariant(exports.isState(state), 'State instance is required to serialize state');
+
+	if (!omitCid) {
+		return state.toJS();
+	} else {
+		return state.filter((value, key) => key !== internals.props.cid).toJS();
 	}
 }
 
-internals.serializer = {
-	serialize(state, omitCid=true) {
-		Invariant(exports.isState(state), 'State instance is required to serialize state');
-
-		if (!omitCid) {
-			return state.toJS();
-		} else {
-			return state.filter((value, key) => key !== internals.props.cid).toJS();
-		}
+exports.merge = (state, data) => {
+	if (exports.isState(state)) {
+		data = data.remove(internals.props.cid);
+	} else {
+		delete data.cid;
 	}
-}
 
-internals.merger = {
-	merge(state, data) {
-		if (exports.State.isState(state)) {
-			data = data.remove(internals.props.cid);
-		} else {
-			delete data.cid;
-		}
-
-		return state.merge(data);
-	}	
-}
-
-
+	return state.merge(data);
+}	
