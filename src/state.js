@@ -34,11 +34,14 @@ exports.create = function(name, defaults) {
 		_isPlainObject(defaults)
 	, 'Defaults for state must be plain object or Immutable Iterable');
 
-	const identity = internals.createIdentity(name, defaults)
+	defaults = Immutable.Map(defaults || {});
+
+	const identity = internals.createIdentity(name)
 
 	const statePrototype = _assign(
 		{
-			factory: internals.factory
+			factory: internals.factory,
+			getDefaults: () => defaults
 		},
 		identity,
 		internals.parser, 
@@ -52,20 +55,11 @@ exports.create = function(name, defaults) {
 
 };
 
-internals.createIdentity = function(name, defaults) {
+internals.createIdentity = function(name) {
 	Invariant(name && (typeof name === "string"), 'Name is required to create an identity');
-
-	Invariant(
-		!defaults ||
-		Immutable.Iterable.isIterable(defaults) || 
-		_isPlainObject(defaults)
-	, 'Defaults for identity must be plain object or Immutable Iterable');
-
-	defaults = Immutable.Map(defaults || {});
 
 	const identity = {
 		getName: () =>  name,
-		getDefaults: () => defaults,
 		hasIdentity: exports.isState,
 		instanceOf(maybeInstance) {
 			return identity.hasIdentity(maybeInstance) && maybeInstance.get(internals.props.name) === name
