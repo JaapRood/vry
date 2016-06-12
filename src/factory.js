@@ -22,7 +22,7 @@ exports.create = function(defaults) {
 
 	return {
 		factory: internals.factory,
-		getDefaults: () => defaults
+		defaults: () => defaults
 	}
 }
 
@@ -39,7 +39,7 @@ internals.factory = function(rawEntity={}, options={}) {
 	var parse = options.parse || this.parse || ((attrs) => attrs)
 
 	// merge with with defaults and cast any nested native selections to Seqs
-	var entity = this.getDefaults().merge(Immutable.Map(rawEntity)).map((value, key) => {
+	var entity = this.defaults().merge(Immutable.Map(rawEntity)).map((value, key) => {
 		if (Immutable.Iterable.isIterable(value)) {
 			return value
 		}
