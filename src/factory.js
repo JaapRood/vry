@@ -55,7 +55,7 @@ internals.factory = function(rawEntity={}, options={}) {
 		return value
 	})
 
-	var parsedEntity = parse(entity)
+	var parsedEntity = parse.call(this, entity, options)
 
 	Invariant(Immutable.Iterable.isIterable(parsedEntity), 'Parse function has to return an Immutable Iterable')
 
