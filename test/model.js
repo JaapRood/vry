@@ -4,7 +4,7 @@ const Immutable = require('immutable')
 const _ = require('lodash')
 
 Test('Model.create', function(t) {
-	t.plan(9 + 2 + 2)
+	t.plan(9 + 2 + 2 + 2)
 
 	t.doesNotThrow(function() {
 		const model = Model.create({
@@ -21,6 +21,12 @@ Test('Model.create', function(t) {
 		t.ok(_.isFunction(model.schema), 'returns an object with a schema method')
 
 	}, 'accepst a plain object spec with a name for the model')
+
+	t.doesNotThrow(function() {
+		const model = Model.create('test-model')
+
+		t.equal(model.getName(), 'test-model', 'string as first argument is set as name of the model')
+	}, 'accepts a name for the model')
 
 	t.doesNotThrow(function() {
 		const defaults = {

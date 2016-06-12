@@ -4,6 +4,7 @@ const _assign = require('lodash.assign')
 const _every = require('lodash.every')
 const _isArray = require('lodash.isarray')
 const _isPlainObject = require('lodash.isplainobject')
+const _isString = require('lodash.isstring')
 const _isFunction = require('lodash.isfunction')
 
 const Identity = require('./identity')
@@ -15,9 +16,14 @@ exports.isModel = (maybeModel) => {}
 
 exports.create = (spec) => {
 	Invariant(
+		_isString(spec) ||
 		_isPlainObject(spec) &&
-		spec.name && (typeof spec.name === "string")
-	, 'A plain object (spec) with a name is required to create a model')
+		spec.name && _isString(spec.name)
+	, 'A name or a plain object (spec) with a name is required to create a model')
+
+	if (_isString(spec)) {
+		spec = { name: spec }
+	}
 
 	const {
 		name,
