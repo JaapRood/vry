@@ -184,7 +184,7 @@ Test('state.serialize', function(t) {
 	var rawInstance = {
 		__cid: 'some-client-id',
 		a: 1,
-		b: 3,
+		b: [3],
 		c: {
 			ca: 10,
 			cb: 30
@@ -201,7 +201,7 @@ Test('state.serialize', function(t) {
 
 		t.ok(_.isObject(serialized), 'returns a plain object');
 		t.equal(rawInstance.a, serialized.a, 'primitive values are serialized as is');
-		t.deepEqual(rawInstance.a, serialized.a, 'Lists are serialized as plain arrays');
+		t.deepEqual(rawInstance.b, serialized.b, 'Lists are serialized as plain arrays');
 		t.deepEqual(rawInstance.c, serialized.c, 'Maps are serialized as plain objects');
 		t.deepEqual([], serialized.f, 'Sets are serialized as plain arrays');
 		t.ok(
