@@ -39,7 +39,7 @@ exports.parse = (attrs) => {
 }
 
 exports.serialize = (state, options) => {
-	Invariant(exports.isState(state), 'State instance is required to serialize state');
+	Invariant(exports.isState(state) || Immutable.Iterable.isIterable(state), 'State instance or Immutable Iterable is required to serialize state');
 	Invariant(!options || _isPlainObject(options), 'Options, when passed, must be a plain object when serializing a state instance')
 
 	if (!options) options = {}
