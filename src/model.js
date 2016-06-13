@@ -69,7 +69,10 @@ exports.parse = function(attrs, options={}) {
 		if (Schema.isType(definition)) {
 			let type = definition
 
-			if (Schema.instanceOfType(type, modelValue)) {
+			if (
+				!_isFunction(type.factory) || 
+				Schema.instanceOfType(type, modelValue)
+			) {
 				// if the value is already and instance of what we're trying to make it
 				// there is nothing for us to do
 				return modelValue
@@ -155,7 +158,10 @@ const Schema = {
 	},
 
 	isType(maybeType) {
-		return !!(maybeType && _isFunction(maybeType.factory))
+		return !!(maybeType && (
+			_isFunction(maybeType.factory) ||
+			_isFunction(maybeType.serialize)
+		))
 	},
 
 	instanceOfType(type, maybeInstance) {
