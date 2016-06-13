@@ -57,7 +57,7 @@ Test('Model.create', function(t) {
 })
 
 Test('Model.parse', function(t) {
-	t.plan(1 + 6)
+	t.plan(1 + 7)
 
 	const OtherModel = Model.create({
 		name: 'woo'
@@ -113,6 +113,7 @@ Test('Model.parse', function(t) {
 
 		const instance = TestModel.factory(attrs)
 
+		t.equal(instance.get('a'), outputA, 'value returned by factory of schema is used as value')
 		t.equal(instance.get('nonDefined'), 'prop', 'parser ignores any attributes not defined in schema')
 		t.equal(instance.getIn(['nested', 'b']), outputB, 'nested schema is applied to nested attributes')
 		t.ok(
