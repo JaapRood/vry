@@ -128,7 +128,7 @@ Test('Model.parse', function(t) {
 })
 
 Test('Model.serialize', function(t) {
-	t.plan(2 + 9)
+	t.plan(12 + 3)
 
 	const OtherModel = Model.create({
 		name: 'woo'
@@ -140,10 +140,11 @@ Test('Model.serialize', function(t) {
 	const outputA = 'A';
 	const outputB = 'B';
 	const outputC = 'C';
+	const omitMetaOptions = { omitMeta: false }
 
 	const schema = {
 		a: {
-			factory: noopFactory,
+			// factory: noopFactory,
 			serialize(value, options) {
 				t.equal(inputA, value, 'serialize of type is called with the value of the ')
 				t.ok(_.isPlainObject(options), 'serialize of type is called with the options passed to serialize')
@@ -153,19 +154,26 @@ Test('Model.serialize', function(t) {
 		},
 		nested: {
 			b: {
-				factory: noopFactory,
+				// factory: noopFactory,
 				serialize: () => outputB
 			}
 		},
 		multiple: [{
-			factory: noopFactory,
+			// factory: noopFactory,
 			serialize: () => outputC
 		}],
 		nestedModel: OtherModel,
 		notInstance: {
-			factory: noopFactory,
+			// factory: noopFactory,
 			serialize() { return 'never seen' },
 			instanceOf() { return false }
+		},
+		optionTest: {
+			serialize(value, options) {
+				t.equal(options.omitMeta, omitMetaOptions.omitMeta, 'options are forwarded to the serialize methods of nested types')
+
+				return value
+			}
 		}
 	}
 
@@ -174,21 +182,21 @@ Test('Model.serialize', function(t) {
 		schema: schema
 	})
 
-	const instance = TestModel.factory({
-		nonDefined: 'prop',
-		a: inputA,
-		nested: {
-			b: 'a nested value'
-		},
-		nestedModel: {
-			'a': 'aaa',
-			'b': 'bbb'
-		},
-		notInstance: 'not-what-we-expect-it-to-be',
-		multiple: ['values', 'array']
-	})
 
 	t.doesNotThrow(() => {
+		const instance = TestModel.factory({
+			nonDefined: 'prop',
+			a: inputA,
+			nested: {
+				b: 'a nested value'
+			},
+			nestedModel: {
+				'a': 'aaa',
+				'b': 'bbb'
+			},
+			notInstance: 'not-what-we-expect-it-to-be',
+			multiple: ['values', 'array']
+		})
 		const serialized = TestModel.serialize(instance)
 
 		t.ok(_.isPlainObject(serialized), 'returns a plain object')
@@ -203,5 +211,15 @@ Test('Model.serialize', function(t) {
 			serialized.multiple.length === instance.get('multiple').count() &&
 			_.every(serialized.multiple, val => val === outputC)
 		, 'Lists are transformed to arrays and mapped with the serialize function of the type defintion')
+		t.ok(_.isUndefined(serialized.__cid), 'the client side identifier is omitted by default')
 	}, 'accepts a model instance')
+
+	t.doesNotThrow(() => {		
+		const instance = TestModel.factory({
+			optionTest: 'some-value'
+		})
+		const serialized = TestModel.serialize(instance, omitMetaOptions)
+
+		t.equal(serialized.__cid, instance.get('__cid'), 'the client side identifier is included when passing `omitMeta: false` as an option')
+	}, 'accepts a model instance and an object of options')
 })
