@@ -212,9 +212,9 @@ Test('state.serialize', function(t) {
 
 	t.doesNotThrow(function() {
 		var serialized = state.serialize(instance);
-		var serializedIncluded = state.serialize(instance, false);
+		var serializedIncluded = state.serialize(instance, { omitMeta: false });
 
 		t.ok(_.isUndefined(serialized.__cid), 'serialized object does not contain cid by default');
 		t.equal(instance.get('__cid'), serializedIncluded.__cid, 'serialized object contains the client identifier of the instance when passing true as the second argument');
-	}, 'accepts an immutable model and a flag to omit the model cid');
+	}, 'accepts an immutable model and options with a flag to omit meta data');
 });

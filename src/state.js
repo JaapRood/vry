@@ -1,13 +1,14 @@
-var Immutable = require('immutable');
-var Invariant = require('invariant');
-var _isPlainObject = require('lodash.isplainobject');
-var _assign = require('lodash.assign')
+const Immutable = require('immutable')
+const Invariant = require('invariant')
+const _isPlainObject = require('lodash.isplainobject')
+const _isUndefined = require('lodash.isundefined')
+const _assign = require('lodash.assign')
 
 const Factory = require('./factory')
 const Identity = require('./identity')
 const Props = require('./props')
 
-var internals = {};
+const internals = {};
 
 internals.props = Props // lazy refactoring, boo
 
@@ -37,10 +38,15 @@ exports.parse = (attrs) => {
 	return attrs
 }
 
-exports.serialize = (state, omitCid=true) => {
+exports.serialize = (state, options) => {
 	Invariant(exports.isState(state), 'State instance is required to serialize state');
+	Invariant(!options || _isPlainObject(options), 'Options, when passed, must be a plain object when serializing a state instance')
 
-	if (!omitCid) {
+	if (!options) options = {}
+	const omitMeta = !_isUndefined(options.omitMeta) ? options.omitMeta : true
+
+
+	if (!omitMeta) {
 		return state.toJS();
 	} else {
 		return state.filter((value, key) => key !== internals.props.cid).toJS();
