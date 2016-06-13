@@ -126,3 +126,82 @@ Test('Model.parse', function(t) {
 
 	}, 'accepts raw attributes in Seq')
 })
+
+Test('Model.serialize', function(t) {
+	t.plan(2 + 9)
+
+	const OtherModel = Model.create({
+		name: 'woo'
+	})
+
+	const noopFactory = (val) => val
+
+	const inputA = 'a';
+	const outputA = 'A';
+	const outputB = 'B';
+	const outputC = 'C';
+
+	const schema = {
+		a: {
+			factory: noopFactory,
+			serialize(value, options) {
+				t.equal(inputA, value, 'serialize of type is called with the value of the ')
+				t.ok(_.isPlainObject(options), 'serialize of type is called with the options passed to serialize')
+
+				return outputA
+			}
+		},
+		nested: {
+			b: {
+				factory: noopFactory,
+				serialize: () => outputB
+			}
+		},
+		multiple: [{
+			factory: noopFactory,
+			serialize: () => outputC
+		}],
+		nestedModel: OtherModel,
+		notInstance: {
+			factory: noopFactory,
+			serialize() { return 'never seen' },
+			instanceOf() { return false }
+		}
+	}
+
+	const TestModel = Model.create({
+		name: 'test-model',
+		schema: schema
+	})
+
+	const instance = TestModel.factory({
+		nonDefined: 'prop',
+		a: inputA,
+		nested: {
+			b: 'a nested value'
+		},
+		nestedModel: {
+			'a': 'aaa',
+			'b': 'bbb'
+		},
+		notInstance: 'not-what-we-expect-it-to-be',
+		multiple: ['values', 'array']
+	})
+
+	t.doesNotThrow(() => {
+		const serialized = TestModel.serialize(instance)
+
+		t.ok(_.isPlainObject(serialized), 'returns a plain object')
+		t.equal(serialized.notDefined, instance.get('notDefined'), 'primitie values without a schema definition are not transformed')
+		t.equal(serialized.a, outputA, 'value returned by serialize method of type definition is used as value')
+		t.ok(_.isPlainObject(serialized.nested), 'nested attributes are transformed to a plain object')
+		t.equal(serialized.nested.b, outputB, 'nested schema is applied to nested attributes')
+		t.deepEqual(serialized.nestedModel, OtherModel.serialize(instance.get('nestedModel')), 'model definitions are valid schema definitions and their serialize method is used')
+		t.equal(serialized.notInstance, instance.get('notInstance'), 'serialize of schema definition not applied when schema has instanceOf method that returns falsey')
+		t.ok(
+			_.isArray(serialized.multiple) &&
+			serialized.multiple.length === instance.get('multiple').count() &&
+			_.every(serialized.multiple, val => val === outputC)
+		, 'Lists are transformed to arrays and mapped with the serialize function of the type defintion')
+	}, 'accepts a model instance')
+})

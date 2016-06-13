@@ -6,13 +6,15 @@ const _isArray = require('lodash.isarray')
 const _isPlainObject = require('lodash.isplainobject')
 const _isString = require('lodash.isstring')
 const _isFunction = require('lodash.isfunction')
+const _isUndefined = require('lodash.isundefined')
 
 const Identity = require('./identity')
 const Factory = require('./factory')
+const State = require('./state')
 
 const internals = {}
 
-exports.isModel = (maybeModel) => {}
+exports.isModel = (maybeModel) => Identity.hasIdentity(maybeModel)
 
 exports.create = (spec) => {
 	Invariant(
@@ -82,16 +84,55 @@ exports.parse = function(attrs, options={}) {
 				Immutable.Iterable.isKeyed(modelValue) && _isPlainObject(nestedSchema)
 			) {
 				return exports.parse(modelValue, { schema: nestedSchema })
-			} else {
-				if (process.env.name !== 'production') {
-					Warning(`Value for '${stateProp}' ignored because it did not match the type defined in schema`);
-				}
-				return null;
 			}
-		} else {
-			return modelValue
 		}
+
+		return modelValue
 	})
+}
+
+exports.serialize = function(model, options) {
+	Invariant(exports.isModel(model) || Immutable.Iterable.isIterable(model), 'Model instance or Immutable.Iterable required to serialize it')
+	Invariant(!options || _isPlainObject(options), 'Options, when passed, must be a plain object when serializing a model instance')
+
+	if (!options) options = {}
+
+	const schema = options.schema || this.schema()
+
+	const partial = model.map((modelValue, modelProp) => {
+		const definition = Schema.getDefinition(schema, modelProp)
+
+		// if we don't have a value or there is nothing defined for it in the schema
+		if (!modelValue || !definition) return modelValue
+
+		if (Schema.isType(definition)) {
+			let type = definition
+
+			if (
+				// no serializer or the value is not an instance of the type
+				!_isFunction(type.serialize) || 
+				(_isFunction(type.instanceOf) && !Schema.instanceOfType(type, modelValue))
+			) {
+				return modelValue
+			}
+
+			return type.serialize(modelValue, options)
+		} else if (Schema.isSchema(definition)) {
+			let nestedSchema = definition
+
+			if (
+				Immutable.Iterable.isIndexed(modelValue) && _isArray(nestedSchema) ||
+				Immutable.Iterable.isKeyed(modelValue) && _isPlainObject(nestedSchema)
+			) {
+				return exports.serialize.call(this, modelValue, _assign({}, options, { schema: nestedSchema }))
+			}
+		}
+
+		// if we've arrived here, no other transformation was applied, so we just return the original
+		return modelValue
+	})
+
+	return State.serialize(partial, options)
 }
 
 
@@ -124,10 +165,6 @@ const Schema = {
 			_isFunction(type.instanceOf) && 
 			type.instanceOf(maybeInstance)
 		)
-	},
-
-	getType(definition) {
-
 	}
 }
 
@@ -137,4 +174,3 @@ const Schema = {
 // }
 
 exports.merge = () => {}
-exports.serialize = () => {}
