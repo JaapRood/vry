@@ -12,6 +12,12 @@ const internals = {};
 
 internals.props = Props // lazy refactoring, boo
 
+internals.State = function(...args) {
+	Invariant(!(this instanceof internals.State), 'State should not be called with `new`')
+
+	return exports.create(...args)
+}
+
 // being a state instance is the same as having an identity... for now
 exports.isState = Identity.hasIdentity
 
@@ -20,6 +26,7 @@ exports.create = function(name, defaults) {
 	Invariant(!defaults || Factory.isDefaults(defaults), 'Defaults for state must be plain object or Immutable Iterable');
 
 	const statePrototype = _assign(
+		Object.create(internals.State.prototype), // makes `x instanceof State` work
 		Identity.create(name),
 		Factory.create(defaults),
 		{
@@ -63,3 +70,5 @@ exports.merge = function(state, data) {
 
 	return state.merge(data.remove(Props.cid));
 }	
+
+module.exports = _assign(internals.State, exports)

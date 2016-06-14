@@ -3,14 +3,28 @@ var State = require('../lib/state');
 var Immutable = require('immutable');
 var _ = require('lodash');
 
+Test('State', function(t) {
+	t.plan(2 + 1)
+
+	t.doesNotThrow(function() {
+		const state = State('test-state', { a: 1, b: 2})
+
+		t.ok(state instanceof State, 'returns an instance of State')
+	}, 'accepts a name for the state and an object of defaults');
+
+	t.throws(function() {
+		const state = new State('test-state', { a: 1, b: 2})
+	}, 'does not allow being called as a constructor with `new` keyword')
+})
+
 Test('State.create', function(t) {
 	t.plan(2);
 
 	t.doesNotThrow(function() {
 		var state = State.create('test-state', { a: 1, b: 2});
 
-		// t.ok(state instanceof State, 'returns an instance of State');
-		t.ok(_.isFunction(state.factory), 'return an object with a factory')
+		t.ok(state instanceof State, 'returns an instance of State')
+		// t.ok(_.isFunction(state.factory), 'return an object with a factory')
 	}, 'accepts a name for the state and an object of defaults');
 });
 
