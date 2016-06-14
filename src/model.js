@@ -48,8 +48,8 @@ exports.create = (spec) => {
 		},
 		{
 			parse: exports.parse,
-			merge: exports.merge,
-			serialize: exports.serialize
+			serialize: exports.serialize,
+			merge: State.merge
 		}
 	)
 
@@ -147,5 +147,3 @@ exports.serialize = function(model, options) {
 
 	return State.serialize(partial, options)
 }
-
-exports.merge = () => {}
