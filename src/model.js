@@ -15,6 +15,13 @@ const Schema = require('./schema')
 
 const internals = {}
 
+internals.Model = function(...args) {
+	Invariant(!(this instanceof internals.Model), 'Model should not be called with `new`')
+
+	return exports.create(...args)
+}
+
+
 exports.isModel = (maybeModel) => Identity.hasIdentity(maybeModel)
 
 exports.create = (spec) => {
@@ -41,6 +48,7 @@ exports.create = (spec) => {
 	if (!schema) schema = {}
 
 	const modelPrototype = _assign(
+		Object.create(internals.Model.prototype), // makes `x instanceof Model` work
 		Identity.create(name),
 		Factory.create(defaults),
 		{
@@ -147,3 +155,5 @@ exports.serialize = function(model, options) {
 
 	return State.serialize(partial, options)
 }
+
+module.exports = _assign(internals.Model, exports) 

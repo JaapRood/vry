@@ -5,14 +5,29 @@ const _ = require('lodash')
 const Model = require('../lib/model')
 const Schema = require('../lib/schema')
 
+Test('Model', function(t) {
+	t.plan(2 + 1)
+
+	t.doesNotThrow(function() {
+		const model = Model('test-model')
+
+		t.ok(model instanceof Model, 'returns an instance of Model')
+	}, 'accepts same arguments as `Model.create`');
+
+	t.throws(function() {
+		const state = new Model('test-model')
+	}, 'does not allow being called as a constructor with `new` keyword')
+})
+
 Test('Model.create', function(t) {
-	t.plan(9 + 2 + 2 + 2)
+	t.plan(10 + 2 + 2 + 2)
 
 	t.doesNotThrow(function() {
 		const model = Model.create({
 			name: 'test-model'
 		})
 
+		t.ok(model instanceof Model, 'returns an object that is an instance of Model')
 		t.ok(_.isFunction(model.factory), 'returns an object with a factory method')
 		t.ok(_.isFunction(model.defaults), 'returns an object with a defaults method')
 		t.ok(_.isFunction(model.parse), 'returns an object with a parse method')
@@ -202,7 +217,7 @@ Test('Model.serialize', function(t) {
 		nestedOrderedSet: Schema.orderedSetOf({
 			factory: (val) => val
 		}),
-		
+
 		optionTest: {
 			serialize(value, options) {
 				t.equal(options.omitMeta, omitMetaOptions.omitMeta, 'options are forwarded to the serialize methods of nested types')
