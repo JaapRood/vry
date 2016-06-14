@@ -150,7 +150,7 @@ Test('Model.parse', function(t) {
 })
 
 Test('Model.serialize', function(t) {
-	t.plan(12 + 3)
+	t.plan(15 + 3)
 
 	const OtherModel = Model.create({
 		name: 'woo'
@@ -190,6 +190,19 @@ Test('Model.serialize', function(t) {
 			serialize() { return 'never seen' },
 			instanceOf() { return false }
 		},
+
+		nestedList: Schema.listOf({
+			factory: (val) => val
+		}),
+
+		nestedSet: Schema.setOf({
+			factory: (val) => val
+		}),
+
+		nestedOrderedSet: Schema.orderedSetOf({
+			factory: (val) => val
+		}),
+		
 		optionTest: {
 			serialize(value, options) {
 				t.equal(options.omitMeta, omitMetaOptions.omitMeta, 'options are forwarded to the serialize methods of nested types')
@@ -217,7 +230,12 @@ Test('Model.serialize', function(t) {
 				'b': 'bbb'
 			},
 			notInstance: 'not-what-we-expect-it-to-be',
-			multiple: ['values', 'array']
+
+			multiple: ['values', 'array'],
+
+			nestedList: [outputA, outputB],
+			nestedSet: [outputA, outputB],
+			nestedOrderedSet: [outputC, outputB, outputA]
 		})
 		const serialized = TestModel.serialize(instance)
 
@@ -233,6 +251,9 @@ Test('Model.serialize', function(t) {
 			serialized.multiple.length === instance.get('multiple').count() &&
 			_.every(serialized.multiple, val => val === outputC)
 		, 'Lists are transformed to arrays and mapped with the serialize function of the type defintion')
+		t.ok(_.isArray(serialized.nestedList), 'nested Lists are serialized as arrays')
+		t.ok(_.isArray(serialized.nestedSet), 'nested Sets are serialized as arrays')
+		t.ok(_.isArray(serialized.nestedOrderedSet), 'nested OrderedSets are serialized as arrays')
 		t.ok(_.isUndefined(serialized.__cid), 'the client side identifier is omitted by default')
 	}, 'accepts a model instance')
 

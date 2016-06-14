@@ -125,17 +125,15 @@ exports.serialize = function(model, options) {
 				return modelValue
 			}
 
-			let serialized = type.serialize(modelValue, options)
-
-			if (_isFunction(serialized)) {
-				serialized = serialized(this)
-			}
-
-			return serialized
+			return type.serialize(modelValue, options)
 		} else if (Schema.isSchema(definition)) {
 			let nestedSchema = definition
 
-			if (
+			if (nestedSchema.getItemSchema) { // could be an Iterable schema
+				let itemSchema = nestedSchema.getItemSchema()
+
+				return nestedSchema.factory(this.serialize(modelValue, { schema: itemSchema }))
+			} else if (
 				Immutable.Iterable.isIndexed(modelValue) && _isArray(nestedSchema) ||
 				Immutable.Iterable.isKeyed(modelValue) && _isPlainObject(nestedSchema)
 			) {
