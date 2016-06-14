@@ -77,25 +77,23 @@ exports.parse = function(attrs, options={}) {
 				// if the value is already and instance of what we're trying to make it
 				// there is nothing for us to do
 				return modelValue
-			} else {
-				let instance = type.factory(modelValue)
+			} 
+			
+			return type.factory(modelValue)
 
-				// factory can be a thunk
-				if (_isFunction(instance)) {
-					instance = instance(this.parse.bind(this))
-				}
-
-				return instance
-			}
 		} else if (Schema.isSchema(definition)) {
 			let nestedSchema = definition
 
-			if (
+			if (nestedSchema.getItemSchema) { // could be an Iterable schema
+				let itemSchema = nestedSchema.getItemSchema()
+
+				return nestedSchema.factory(this.parse(modelValue, { schema: itemSchema }))
+			} else if ( // support plain objects and arrays as they'll automatically get cast properly
 				Immutable.Iterable.isIndexed(modelValue) && _isArray(nestedSchema) ||
 				Immutable.Iterable.isKeyed(modelValue) && _isPlainObject(nestedSchema)
 			) {
 				return this.parse(modelValue, { schema: nestedSchema })
-			}
+			} 
 		}
 
 		return modelValue
