@@ -1,7 +1,9 @@
 const Test = require('tape')
-const Model = require('../lib/model')
 const Immutable = require('immutable')
 const _ = require('lodash')
+
+const Model = require('../lib/model')
+const Schema = require('../lib/schema')
 
 Test('Model.create', function(t) {
 	t.plan(9 + 2 + 2 + 2)
@@ -57,7 +59,7 @@ Test('Model.create', function(t) {
 })
 
 Test('Model.parse', function(t) {
-	t.plan(2 + 8)
+	t.plan(1 + 10)
 
 	const OtherModel = Model.create({
 		name: 'woo'
@@ -82,7 +84,7 @@ Test('Model.parse', function(t) {
 				factory: () => outputB
 			}
 		},
-		multiple: [{
+		nestedArray: [{
 			factory: () => outputC 
 		}],
 		nestedModel: OtherModel,
@@ -90,15 +92,18 @@ Test('Model.parse', function(t) {
 			factory() { return 'not-seen' },
 			instanceOf() { return true }
 		},
-		thunk: {
-			factory() {
-				return function(parse) {
-					t.ok(_.isFunction(parse), 'thunk is called with the parse method of the model')
 
-					return outputD
-				}
-			}
-		}
+		nestedList: Schema.listOf({
+			factory: (val) => val
+		}),
+
+		nestedSet: Schema.setOf({
+			factory: (val) => val
+		}),
+
+		nestedOrderedSet: Schema.orderedSetOf({
+			factory: (val) => val
+		})
 	}
 
 	const TestModel = Model.create({
@@ -118,8 +123,10 @@ Test('Model.parse', function(t) {
 				'b': 'bbb'
 			},
 			alreadyInstance: 'already-what-it-should-be',
-			multiple: ['values', 'array'],
-			thunk: 'a thunk value'
+			nestedArray: ['values', 'array'],
+			nestedList: [outputA, outputB],
+			nestedSet: [outputA, outputB],
+			nestedOrderedSet: [outputC, outputB, outputA]
 		}
 
 		const instance = TestModel.factory(attrs)
@@ -128,13 +135,16 @@ Test('Model.parse', function(t) {
 		t.equal(instance.get('nonDefined'), 'prop', 'parser ignores any attributes not defined in schema')
 		t.equal(instance.getIn(['nested', 'b']), outputB, 'nested schema is applied to nested attributes')
 		t.ok(
-			Immutable.List(instance.get('multiple')) &&
-			instance.get('multiple').count() === attrs.multiple.length &&
-			instance.get('multiple').every(val => val === outputC)
+			Immutable.List(instance.get('nestedArray')) &&
+			instance.get('nestedArray').count() === attrs.nestedArray.length &&
+			instance.get('nestedArray').every(val => val === outputC)
 		, 'arrays are cast as Lists and mapped with the factory of the type defintion')
 		t.ok(OtherModel.instanceOf(instance.get('nestedModel')), 'Model definitions are valid type definitions')
 		t.equal(instance.get('alreadyInstance'), attrs.alreadyInstance, 'mapping value with `factory` of type definition unless its `instanceOf` method returns truthy')
-		t.equal(instance.get('thunk'), outputD, 'value returned by factory thunk is used as value')
+		
+		t.ok(Immutable.List([outputA, outputB]).equals(instance.get('nestedList')), 'schema generated with `Schema.listOf` casts a value to an Immutable.List')
+		t.ok(Immutable.Set([outputB, outputA]).equals(instance.get('nestedSet')), 'schema generated with `Schema.setOf` casts a value to an Immutable.Set')
+		t.ok(Immutable.OrderedSet([outputC, outputB, outputA]).equals(instance.get('nestedOrderedSet')), 'schema generated with `Schema.orderedSetOf` casts a value to an Immutable.OrderedSet')
 
 	}, 'accepts raw attributes in Seq')
 })
