@@ -208,7 +208,7 @@ Test('state.serialize', function(t) {
 			_.isEqual(rawInstance.d, serialized.d) &&
 			_.isEqual(rawInstance.e, serialized.e)
 		, 'nested Iterables are serialized to their plain counterparts recursively');
-	}, 'accepts an immutable model instance');
+	}, 'accepts a State instance');
 
 	t.doesNotThrow(function() {
 		var serialized = state.serialize(instance);
@@ -216,5 +216,37 @@ Test('state.serialize', function(t) {
 
 		t.ok(_.isUndefined(serialized.__cid), 'serialized object does not contain cid by default');
 		t.equal(instance.get('__cid'), serializedIncluded.__cid, 'serialized object contains the client identifier of the instance when passing true as the second argument');
-	}, 'accepts an immutable model and options with a flag to omit meta data');
+	}, 'accepts a State instance and options with a flag to omit meta data');
 });
+
+Test('state.merge', function(t) {
+	t.plan(3 + 4)
+
+	const TestState = State.create('test-state', {})
+
+	const baseInstance = TestState.factory({
+		a: 1
+	})
+
+	const rawSource = {
+		a: 2,
+		b: 3
+	}
+
+	const sourceInstance = TestState.factory(rawSource)
+
+	t.doesNotThrow(function() {
+		const mergedInstance = TestState.merge(baseInstance, rawSource)
+
+		t.ok(TestState.instanceOf(mergedInstance), 'returns an updated instance')
+		t.ok(mergedInstance.equals(baseInstance.merge(rawSource)), 'updated instance has attributes of source merged into instance')
+	}, 'accepts a State instance and a plain object of new attributes')
+
+	t.doesNotThrow(function() {
+		const mergedInstance = TestState.merge(baseInstance, sourceInstance)
+
+		t.ok(TestState.instanceOf(mergedInstance), 'returns an updated instance')
+		t.ok(mergedInstance.equals(baseInstance.merge(rawSource)), 'updated instance has attributes of source merged into base')
+		t.equals(mergedInstance.get('__cid'), baseInstance.get('__cid'), 'updated instance has client identifer `__cid` from base')
+	}, 'accepts two State instances, a base and source')
+})

@@ -53,12 +53,13 @@ exports.serialize = (state, options) => {
 	}
 }
 
-exports.merge = (state, data) => {
-	if (exports.isState(state)) {
-		data = data.remove(internals.props.cid);
-	} else {
-		delete data.cid;
+exports.merge = function(state, data) {
+	Invariant(this.instanceOf(state), `Instance of ${this.getName()} is required to merge it with new attributes`)
+	Invariant(_isPlainObject(data) || Immutable.Iterable.isIterable(data), 'Plain object or Immutable Iterable required as source to merge with the state instance')
+
+	if (!this.instanceOf(data)) {
+		data = this.factory(data)
 	}
 
-	return state.merge(data);
+	return state.merge(data.remove(Props.cid));
 }	
