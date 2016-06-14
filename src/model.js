@@ -138,45 +138,4 @@ exports.serialize = function(model, options) {
 	return State.serialize(partial, options)
 }
 
-
-const Schema = {
-	getDefinition(schema, prop) {
-		return _isArray(schema) ? schema[0] : 
-				schema ? schema[prop] :
-				null
-	},
-
-	isSchema(maybeSchema) {
-		return !!(
-			// objects go
-			_isPlainObject(maybeSchema) || 
-			// array with one value go
-			_isArray(maybeSchema) && maybeSchema.length === 1
-		) && _every(maybeSchema, (value, key) => {
-			return Schema.isType(value) || Schema.isSchema(value)
-		})
-	},
-
-	isType(maybeType) {
-		return !!(maybeType && (
-			_isFunction(maybeType.factory) ||
-			_isFunction(maybeType.serialize)
-		))
-	},
-
-	instanceOfType(type, maybeInstance) {
-		// const type = definition.type
-		return (
-			type && 
-			_isFunction(type.instanceOf) && 
-			type.instanceOf(maybeInstance)
-		)
-	}
-}
-
-// exports.isSchema = (maybeSchema) => {}
-// exports.isEntity = (maybeEntity) => {
-// 	return maybeEntity && _isFunction(maybeEntity.factory)
-// }
-
 exports.merge = () => {}
