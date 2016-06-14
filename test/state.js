@@ -236,10 +236,15 @@ Test('state.serialize', function(t) {
 Test('state.merge', function(t) {
 	t.plan(3 + 4)
 
-	const TestState = State.create('test-state', {})
+	const rawDefaults = {
+		c: 1
+	}
+
+	const TestState = State.create('test-state', rawDefaults)
 
 	const baseInstance = TestState.factory({
-		a: 1
+		a: 1,
+		c: 3
 	})
 
 	const rawSource = {
@@ -260,7 +265,7 @@ Test('state.merge', function(t) {
 		const mergedInstance = TestState.merge(baseInstance, sourceInstance)
 
 		t.ok(TestState.instanceOf(mergedInstance), 'returns an updated instance')
-		t.ok(mergedInstance.equals(baseInstance.merge(rawSource)), 'updated instance has attributes of source merged into base')
+		t.ok(mergedInstance.equals(baseInstance.merge(rawDefaults, rawSource)), 'updated instance has attributes of source merged into base')
 		t.equals(mergedInstance.get('__cid'), baseInstance.get('__cid'), 'updated instance has client identifer `__cid` from base')
 	}, 'accepts two State instances, a base and source')
 })
