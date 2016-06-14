@@ -11,6 +11,7 @@ const _isUndefined = require('lodash.isundefined')
 const Identity = require('./identity')
 const Factory = require('./factory')
 const State = require('./state')
+const Schema = require('./schema')
 
 const internals = {}
 
@@ -77,7 +78,14 @@ exports.parse = function(attrs, options={}) {
 				// there is nothing for us to do
 				return modelValue
 			} else {
-				return type.factory(modelValue)
+				let instance = type.factory(modelValue)
+
+				// factory can be a thunk
+				if (_isFunction(instance)) {
+					instance = instance(this.parse.bind(this))
+				}
+
+				return instance
 			}
 		} else if (Schema.isSchema(definition)) {
 			let nestedSchema = definition
@@ -86,7 +94,7 @@ exports.parse = function(attrs, options={}) {
 				Immutable.Iterable.isIndexed(modelValue) && _isArray(nestedSchema) ||
 				Immutable.Iterable.isKeyed(modelValue) && _isPlainObject(nestedSchema)
 			) {
-				return exports.parse(modelValue, { schema: nestedSchema })
+				return this.parse(modelValue, { schema: nestedSchema })
 			}
 		}
 
@@ -119,7 +127,13 @@ exports.serialize = function(model, options) {
 				return modelValue
 			}
 
-			return type.serialize(modelValue, options)
+			let serialized = type.serialize(modelValue, options)
+
+			if (_isFunction(serialized)) {
+				serialized = serialized(this)
+			}
+
+			return serialized
 		} else if (Schema.isSchema(definition)) {
 			let nestedSchema = definition
 

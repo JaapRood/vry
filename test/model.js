@@ -57,7 +57,7 @@ Test('Model.create', function(t) {
 })
 
 Test('Model.parse', function(t) {
-	t.plan(1 + 7)
+	t.plan(2 + 8)
 
 	const OtherModel = Model.create({
 		name: 'woo'
@@ -67,6 +67,7 @@ Test('Model.parse', function(t) {
 	const outputA = 'A';
 	const outputB = 'B';
 	const outputC = 'C';
+	const outputD = 'D';
 
 	const schema = {
 		a: {
@@ -88,6 +89,15 @@ Test('Model.parse', function(t) {
 		alreadyInstance: {
 			factory() { return 'not-seen' },
 			instanceOf() { return true }
+		},
+		thunk: {
+			factory() {
+				return function(parse) {
+					t.ok(_.isFunction(parse), 'thunk is called with the parse method of the model')
+
+					return outputD
+				}
+			}
 		}
 	}
 
@@ -108,7 +118,8 @@ Test('Model.parse', function(t) {
 				'b': 'bbb'
 			},
 			alreadyInstance: 'already-what-it-should-be',
-			multiple: ['values', 'array']
+			multiple: ['values', 'array'],
+			thunk: 'a thunk value'
 		}
 
 		const instance = TestModel.factory(attrs)
@@ -123,6 +134,7 @@ Test('Model.parse', function(t) {
 		, 'arrays are cast as Lists and mapped with the factory of the type defintion')
 		t.ok(OtherModel.instanceOf(instance.get('nestedModel')), 'Model definitions are valid type definitions')
 		t.equal(instance.get('alreadyInstance'), attrs.alreadyInstance, 'mapping value with `factory` of type definition unless its `instanceOf` method returns truthy')
+		t.equal(instance.get('thunk'), outputD, 'value returned by factory thunk is used as value')
 
 	}, 'accepts raw attributes in Seq')
 })
