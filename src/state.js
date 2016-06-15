@@ -46,7 +46,16 @@ exports.parse = (attrs) => {
 	return attrs
 }
 
-exports.serialize = (state, options) => {
+exports.serialize = (state, optionsOrOmit) => {
+	var options;
+
+	// TODO: deprecate passing anything but options in v2
+	if (_isPlainObject(optionsOrOmit)) {
+		options = optionsOrOmit
+	} else {
+		options = { omitMeta: optionsOrOmit }
+	}
+
 	Invariant(exports.isState(state) || Immutable.Iterable.isIterable(state), 'State instance or Immutable Iterable is required to serialize state');
 	Invariant(!options || _isPlainObject(options), 'Options, when passed, must be a plain object when serializing a state instance')
 

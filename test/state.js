@@ -191,7 +191,7 @@ Test('state.collectionOf', function(t) {
 });
 
 Test('state.serialize', function(t) {
-	t.plan(7 + 3);
+	t.plan(7 + 3 + 2);
 
 	var state = State.create('test-model', {});
 
@@ -224,13 +224,20 @@ Test('state.serialize', function(t) {
 		, 'nested Iterables are serialized to their plain counterparts recursively');
 	}, 'accepts a State instance');
 
+
 	t.doesNotThrow(function() {
 		var serialized = state.serialize(instance);
 		var serializedIncluded = state.serialize(instance, { omitMeta: false });
 
 		t.ok(_.isUndefined(serialized.__cid), 'serialized object does not contain cid by default');
-		t.equal(instance.get('__cid'), serializedIncluded.__cid, 'serialized object contains the client identifier of the instance when passing true as the second argument');
+		t.equal(instance.get('__cid'), serializedIncluded.__cid, 'serialized object contains the client identifier of the instance when passing true for the `omitMeta` option');
 	}, 'accepts a State instance and options with a flag to omit meta data');
+
+	t.doesNotThrow(function() {
+		var serializedIncluded = state.serialize(instance, false); 
+
+		t.equal(instance.get('__cid'), serializedIncluded.__cid, 'serialized object contains the client identifier of the instance when passing true as the second argument');
+	}, 'accepts a State instance and a flag to omit meta data (backwards compat for 1.x)');
 });
 
 Test('state.merge', function(t) {
