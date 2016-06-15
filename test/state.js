@@ -40,6 +40,28 @@ Test('State.isState', function(t) {
 	}, 'does not throw');
 });
 
+Test('state.typeName', function(t) {
+	t.plan(2)
+
+	const typeName = 'woo'
+	const TestState = State.create(typeName)
+
+	t.doesNotThrow(function() {
+		t.equal(TestState.typeName(), typeName, 'returns the name which was used to create it')
+	}, 'allows for no arguments to be passed')
+})
+
+Test('state.defaults', function(t) {
+	t.plan(2)
+
+	const defaults = { a: 1, nested: { b: 2 }}
+	const TestState = State.create('test', defaults)
+
+	t.doesNotThrow(function() {
+		t.ok(Immutable.Map(defaults).equals(TestState.defaults()), 'returns the state defaults cast to a Immutable.Map')
+	}, 'allows for no arguments to be passed')
+})
+	
 Test('state.factory', function(t) {
 	t.plan(6 + 3 + 2  + 1);
 
