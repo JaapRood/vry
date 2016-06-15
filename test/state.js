@@ -63,7 +63,7 @@ Test('state.defaults', function(t) {
 })
 	
 Test('state.factory', function(t) {
-	t.plan(6 + 3 + 2  + 1);
+	t.plan(6 + 3 + 2 + 1);
 
 
 	t.doesNotThrow(function() {
@@ -272,7 +272,7 @@ Test('state.serialize', function(t) {
 
 		t.deepEqual(serialized, noContext, 'returns the same when called out of context')
 
-	}, 'can be called withot context')
+	}, 'can be called without context')
 });
 
 Test('state.merge', function(t) {
