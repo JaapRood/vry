@@ -41,7 +41,7 @@ Test('State.isState', function(t) {
 });
 
 Test('state.factory', function(t) {
-	t.plan(6 + 3 + 2);
+	t.plan(6 + 3 + 2  + 1);
 
 
 	t.doesNotThrow(function() {
@@ -78,6 +78,11 @@ Test('state.factory', function(t) {
 
 		t.ok(childInstance.equals(instance.get('b')), 'returns instance with nested instances untouched');
 	}, 'accepts an object of attributes with instances of other states');
+
+	t.doesNotThrow(function() {
+		var state = State.create('test-state', { a: 1, b: 3});
+		state.factory.call(null)
+	}, 'can be called without context')
 });
 
 Test('state.factory - parse', function(t) {
@@ -164,9 +169,9 @@ Test('state.instanceOf', function(t) {
 	var instanceB = stateB.factory();
 
 	t.doesNotThrow(function() {
-		t.equal(stateA.instanceOf(instanceA), true, 'returns true for state instances created by it');
+		t.equal(stateA.instanceOf.call(null, instanceA), true, 'returns true for state instances created by it');
 		t.equal(stateA.instanceOf(instanceB), false, 'returns true for state instances created by other states');
-	}, 'accepts any value');
+	}, 'accepts any value and can be called without context');
 });
 
 Test('state.collectionOf', function(t) {
@@ -183,15 +188,15 @@ Test('state.collectionOf', function(t) {
 		var collectionB = Immutable.List([instanceB]);
 		var collectionMixed = Immutable.List([instanceA, instanceB]);
 
-		t.equal(stateA.collectionOf(collectionA), true, 'returns true for immutable collections that contain instances of that specific state');
+		t.equal(stateA.collectionOf.call(null, collectionA), true, 'returns true for immutable collections that contain instances of that specific state');
 		t.equal(stateA.collectionOf(collectionB), false, 'returns true for immutable collections that contain instances of other states');
 		t.equal(stateA.collectionOf(collectionMixed), false, 'returns false for immutable collections where instances of specific state or mixed with other values');
 
-	}, 'accepts any value');
+	}, 'accepts any value and can be called without context');
 });
 
 Test('state.serialize', function(t) {
-	t.plan(7 + 3 + 2);
+	t.plan(7 + 3 + 2 + 2);
 
 	var state = State.create('test-model', {});
 
@@ -238,10 +243,18 @@ Test('state.serialize', function(t) {
 
 		t.equal(instance.get('__cid'), serializedIncluded.__cid, 'serialized object contains the client identifier of the instance when passing true as the second argument');
 	}, 'accepts a State instance and a flag to omit meta data (backwards compat for 1.x)');
+
+	t.doesNotThrow(function() {
+		const serialized = state.serialize(instance)
+		const noContext = state.serialize.call(null, instance)
+
+		t.deepEqual(serialized, noContext, 'returns the same when called out of context')
+
+	}, 'can be called withot context')
 });
 
 Test('state.merge', function(t) {
-	t.plan(3 + 4)
+	t.plan(3 + 4 + 2)
 
 	const rawDefaults = {
 		c: 1
@@ -275,4 +288,11 @@ Test('state.merge', function(t) {
 		t.ok(mergedInstance.equals(baseInstance.merge(rawDefaults, rawSource)), 'updated instance has attributes of source merged into base')
 		t.equals(mergedInstance.get('__cid'), baseInstance.get('__cid'), 'updated instance has client identifer `__cid` from base')
 	}, 'accepts two State instances, a base and source')
+
+	t.doesNotThrow(function() {
+		const withContext = TestState.merge(baseInstance, sourceInstance)
+		const withoutContext = TestState.merge.call(null, baseInstance, sourceInstance)
+
+		t.ok(withContext.equals(withoutContext), 'returns the same when called out of context')
+	}, 'can be called without context')
 })

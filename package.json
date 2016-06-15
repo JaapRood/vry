@@ -25,6 +25,8 @@
     "immutable": "^3.7.6",
     "lodash.assign": "^4.0.9",
     "lodash.every": "^4.4.0",
+    "lodash.foreach": "^4.3.0",
+    "lodash.functions": "^4.1.1",
     "lodash.isarray": "^3.0.4",
     "lodash.isfunction": "^3.0.6",
     "lodash.isplainobject": "^3.2.0",

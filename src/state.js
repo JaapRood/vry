@@ -3,7 +3,9 @@ const Invariant = require('invariant')
 const _isPlainObject = require('lodash.isplainobject')
 const _isUndefined = require('lodash.isundefined')
 const _assign = require('lodash.assign')
+const _forEach = require('lodash.foreach')
 const _keys = require('lodash.keys')
+const _functions = require('lodash.functions')
 
 const Factory = require('./factory')
 const Identity = require('./identity')
@@ -37,7 +39,13 @@ exports.create = function(name, defaults) {
 		}
 	)
 
-	let state = Object.create(statePrototype)
+	var state = Object.create(statePrototype)
+
+	// Binding each prototype method to the state itself. Unbound versions can still
+	// be used by accessing the prototype
+	_forEach(_functions(statePrototype), (methodName) => {
+		state[methodName] = statePrototype[methodName].bind(state)
+	})
 
 	return state
 };
