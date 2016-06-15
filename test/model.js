@@ -164,6 +164,47 @@ Test('model.factory - parse', function(t) {
 	}, 'accepts raw attributes in Seq')
 })
 
+Test('model.typeName', function(t) {
+	t.plan(2)
+
+	const typeName = 'woo'
+	const TestModel = Model.create(typeName)
+
+	t.doesNotThrow(function() {
+		t.equal(TestModel.typeName(), typeName, 'returns the name which was used to create it')
+	}, 'allows for no arguments to be passed')
+})
+
+Test('model.defaults', function(t) {
+	t.plan(2)
+
+	const defaults = { a: 1, nested: { b: 2 }}
+	const TestModel = Model.create({
+		name: 'test',
+		defaults: defaults
+	})
+
+	t.doesNotThrow(function() {
+		t.ok(Immutable.Map(defaults).equals(TestModel.defaults()), 'returns the model defaults cast to a Immutable.Map')
+	}, 'allows for no arguments to be passed')
+})
+
+Test('model.schema', function(t) {
+	t.plan(2)
+
+	const schema = { 
+		a: { factory: _.identity }
+	}
+	const TestModel = Model.create({
+		name: 'test',
+		schema: schema
+	})
+
+	t.doesNotThrow(function() {
+		t.deepEqual(TestModel.schema(), schema, 'returns the model schema')
+	}, 'allows for no arguments to be passed')
+})
+
 Test('model.serialize', function(t) {
 	t.plan(15 + 3)
 
