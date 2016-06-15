@@ -62,7 +62,7 @@ exports.serialize = (state, options) => {
 }
 
 exports.merge = function(state, data) {
-	Invariant(this.instanceOf(state), `Instance of ${this.getName()} is required to merge it with new attributes`)
+	Invariant(this.instanceOf(state), `Instance of ${this.typeName()} is required to merge it with new attributes`)
 	Invariant(Immutable.Iterable.isIterable(data) || _isPlainObject(data), 'Plain object or Immutable Iterable required as source to merge with the state instance')
 
 	if (!this.instanceOf(data)) {

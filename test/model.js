@@ -42,7 +42,7 @@ Test('Model.create', function(t) {
 	t.doesNotThrow(function() {
 		const model = Model.create('test-model')
 
-		t.equal(model.getName(), 'test-model', 'string as first argument is set as name of the model')
+		t.equal(model.typeName(), 'test-model', 'string as first argument is set as name of the model')
 	}, 'accepts a name for the model')
 
 	t.doesNotThrow(function() {

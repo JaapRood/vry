@@ -13,7 +13,7 @@ exports.create = function(name) {
 	Invariant(name && (typeof name === "string"), 'Name is required to create an identity');
 
 	return {
-		getName: () =>  name,
+		typeName: () =>  name,
 		
 		hasIdentity: exports.hasIdentity,
 

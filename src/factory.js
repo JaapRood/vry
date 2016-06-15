@@ -61,7 +61,7 @@ internals.factory = function(rawEntity={}, options={}) {
 
 	var metaAttrs = {
 		[Props.cid]: internals.generateCid(),
-		[Props.name]: this.getName()
+		[Props.name]: this.typeName()
 	}
 
 	return parsedEntity.toKeyedSeq().map(function(value, key) {
