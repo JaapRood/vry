@@ -73,7 +73,7 @@ Test('Model.create', function(t) {
 	}, 'accepts a plain object spec with a name and schema')
 })
 
-Test('Model.parse', function(t) {
+Test('model.factory - parse', function(t) {
 	t.plan(1 + 10)
 
 	const OtherModel = Model.create({
@@ -164,7 +164,7 @@ Test('Model.parse', function(t) {
 	}, 'accepts raw attributes in Seq')
 })
 
-Test('Model.serialize', function(t) {
+Test('model.serialize', function(t) {
 	t.plan(15 + 3)
 
 	const OtherModel = Model.create({
