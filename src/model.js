@@ -2,6 +2,8 @@ const Immutable = require('immutable')
 const Invariant = require('invariant')
 const _assign = require('lodash.assign')
 const _every = require('lodash.every')
+const _forEach = require('lodash.foreach')
+const _functions = require('lodash.functions')
 const _isArray = require('lodash.isarray')
 const _isPlainObject = require('lodash.isplainobject')
 const _isString = require('lodash.isstring')
@@ -61,7 +63,13 @@ exports.create = (spec) => {
 		}
 	)
 
-	let model = Object.create(modelPrototype)
+	var model = Object.create(modelPrototype)
+
+	// Binding each prototype method to the state itself. Unbound versions can still
+	// be used by accessing the prototype
+	_forEach(_functions(modelPrototype), (methodName) => {
+		model[methodName] = modelPrototype[methodName].bind(model)
+	})
 	
 	return model
 }

@@ -74,7 +74,7 @@ Test('Model.create', function(t) {
 })
 
 Test('model.factory - parse', function(t) {
-	t.plan(1 + 10)
+	t.plan(1 + 10 + 1)
 
 	const OtherModel = Model.create({
 		name: 'woo'
@@ -162,6 +162,10 @@ Test('model.factory - parse', function(t) {
 		t.ok(Immutable.OrderedSet([outputC, outputB, outputA]).equals(instance.get('nestedOrderedSet')), 'schema generated with `Schema.orderedSetOf` casts a value to an Immutable.OrderedSet')
 
 	}, 'accepts raw attributes in Seq')
+
+	t.doesNotThrow(() => {
+		TestModel.factory.call(null)
+	}, 'can be called without context')
 })
 
 Test('model.typeName', function(t) {
@@ -206,7 +210,7 @@ Test('model.schema', function(t) {
 })
 
 Test('model.serialize', function(t) {
-	t.plan(15 + 3)
+	t.plan(15 + 3 + 2)
 
 	const OtherModel = Model.create({
 		name: 'woo'
@@ -321,4 +325,13 @@ Test('model.serialize', function(t) {
 
 		t.equal(serialized.__cid, instance.get('__cid'), 'the client side identifier is included when passing `omitMeta: false` as an option')
 	}, 'accepts a model instance and an object of options')
+
+	t.doesNotThrow(() => {
+		const instance = TestModel.factory({ someProp: inputA })
+
+		const withContext = TestModel.serialize(instance)
+		const withoutContext = TestModel.serialize.call(null, instance)
+
+		t.deepEqual(withContext, withoutContext, 'returns the same when called out of context')
+	}, 'can be called without context')
 })
