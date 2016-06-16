@@ -12,6 +12,7 @@ const _isUndefined = require('lodash.isundefined')
 
 const Identity = require('./identity')
 const Factory = require('./factory')
+const Merge = require('./merge')
 const State = require('./state')
 const Schema = require('./schema')
 
@@ -49,17 +50,21 @@ exports.create = (spec) => {
 	
 	if (!schema) schema = {}
 
+	const identity = Identity.create(name)
+	const factory = Factory.create(defaults)
+	const merge = Merge.create(identity, factory)
+
 	const modelPrototype = _assign(
 		Object.create(internals.Model.prototype), // makes `x instanceof Model` work
-		Identity.create(name),
-		Factory.create(defaults),
+		identity,
+		factory,
+		merge,
 		{
 			schema: () => schema
 		},
 		{
 			parse: exports.parse,
-			serialize: exports.serialize,
-			merge: State.merge
+			serialize: exports.serialize
 		}
 	)
 
@@ -152,7 +157,7 @@ exports.serialize = function(model, options) {
 			} else if (
 				Immutable.Iterable.isIndexed(modelValue) && _isArray(nestedSchema) ||
 				Immutable.Iterable.isKeyed(modelValue) && _isPlainObject(nestedSchema)
-			) {
+		) {
 				return exports.serialize.call(this, modelValue, _assign({}, options, { schema: nestedSchema }))
 			}
 		}

@@ -4,11 +4,11 @@ const _isPlainObject = require('lodash.isplainobject')
 const _isUndefined = require('lodash.isundefined')
 const _assign = require('lodash.assign')
 const _forEach = require('lodash.foreach')
-const _keys = require('lodash.keys')
 const _functions = require('lodash.functions')
 
 const Factory = require('./factory')
 const Identity = require('./identity')
+const Merge = require('./merge')
 const Props = require('./props')
 
 const internals = {};
@@ -28,14 +28,17 @@ exports.create = function(name, defaults) {
 	Invariant(name && (typeof name === "string"), 'Name is required to create a State');
 	Invariant(!defaults || Factory.isDefaults(defaults), 'Defaults for state must be plain object or Immutable Iterable');
 
+	const identity = Identity.create(name)
+	const factory = Factory.create(defaults)
+
 	const statePrototype = _assign(
 		Object.create(internals.State.prototype), // makes `x instanceof State` work
-		Identity.create(name),
-		Factory.create(defaults),
+		identity,
+		factory,
+		Merge.create(identity, factory),
 		{
 			parse: exports.parse,
-			serialize: exports.serialize,
-			merge: exports.merge
+			serialize: exports.serialize
 		}
 	)
 
@@ -77,17 +80,5 @@ exports.serialize = (state, optionsOrOmit) => {
 		return state.filter((value, key) => key !== internals.props.cid).toJS();
 	}
 }
-
-exports.merge = function(state, data) {
-	Invariant(this.instanceOf(state), `Instance of ${this.typeName()} is required to merge it with new attributes`)
-	Invariant(Immutable.Iterable.isIterable(data) || _isPlainObject(data), 'Plain object or Immutable Iterable required as source to merge with the state instance')
-
-	if (!this.instanceOf(data)) {
-		let dataKeys = Immutable.Seq(Immutable.Iterable.isIterable(data) ? data.keys() : _keys(data))
-		data = this.factory(data).filter((val, key) => dataKeys.includes(key))
-	}
-
-	return state.merge(data.remove(Props.cid));
-}	
 
 module.exports = _assign(internals.State, exports)
