@@ -100,7 +100,7 @@ Create a new type of State. Returns an object with methods to work with the crea
 - `name` - (required) name of the state type
 - `defaults` - plain object or `Immutable.Iterable` of default key-value pairs that are used as the base of every instance
 
-```
+```js
 const Vry = require('vry')
 
 const User = Vry.State.create('user', {
@@ -118,7 +118,7 @@ Returns a boolean indicating whether the passed value is an instance of **any** 
 
 - `maybeState` - any value
 
-```
+```js
 const notStateUser = Immutable.Map({ name: 'Homer '})
 const user = User.factory(notStateUser)
 
@@ -130,7 +130,7 @@ console.log(State.isState(user)) // true
 
 Returns the defaults as defined with `State.create`, represented as an `Immutable.Map`.
 
-```
+```js
 const User = Vry.State.create('user', {
   name: 'New user',
   email: null,
@@ -151,7 +151,7 @@ console.log(defaults)
 
 Returns the name (string) as defined with `State.create`.
 
-```
+```js
 const User = Vry.State.create('user', {
   name: 'New user',
   email: null,
@@ -171,7 +171,7 @@ Returns a new instance (`Immutable.Map`) of the state type using the type's defa
 - `options` - `object` with the following keys
   - `parse` - `function` as described by `type.parse` that is to be used instead of `type.parse` to transform the passed in `attributes`.
 
-```
+```js
 const User = Vry.State.create('user', {
   name: 'New user',
   email: null,
@@ -196,7 +196,7 @@ Returns a boolean indicating whether the passed value is an "instance" of this t
 
 - `maybeInstance` - any value
 
-```
+```js
 const user = User.factory()
 const post = Post.factory()
 
@@ -210,7 +210,7 @@ Returns a boolean indicating whether the passed value is an `Immutable.Collectio
 
 - `maybeCollection` - any value
 
-```
+```js
 const users = Immutable.List([
   User.factory(),
   User.factory()
@@ -239,7 +239,7 @@ Must return a `Immutable.Iterable`. Any `Immutable.Seq`s returned are converted 
 
 - `attributes` - (required) `Immutable.Map` of attributes. Any plain `object`s or `array`s are represented as `Immutable.Seq`s (`Keyed` and `Indexed` respectively), making it easy to deal with nested collections with a uniform API and giving you the opportunity to convert them to something else like a `Set`.
 
-```
+```js
 const User = Vry.State.create('user', {
   name: 'New user',
   email: null,
@@ -268,7 +268,7 @@ Returns the passed instance as a plain object.
 - `options` - `object` with the following keys
   - `omitMeta` - when falsey the identity meta data will be included in the result. Defaults to `true`
 
-```
+```js
 const user = User.factory({
   name: 'Homer'
 })
