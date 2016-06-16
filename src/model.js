@@ -13,7 +13,7 @@ const _isUndefined = require('lodash.isundefined')
 const Identity = require('./identity')
 const Factory = require('./factory')
 const Merge = require('./merge')
-const State = require('./state')
+const Props = require('./props')
 const Schema = require('./schema')
 
 const internals = {}
@@ -60,17 +60,15 @@ exports.create = (spec) => {
 		factory,
 		merge,
 		{
-			schema: () => schema
-		},
-		{
-			parse: exports.parse,
-			serialize: exports.serialize
+			schema: () => schema,
+			parse: internals.parse,
+			serialize: internals.serialize
 		}
 	)
 
 	var model = Object.create(modelPrototype)
 
-	// Binding each prototype method to the state itself. Unbound versions can still
+	// Binding each prototype method to the model itself. Unbound versions can still
 	// be used by accessing the prototype
 	_forEach(_functions(modelPrototype), (methodName) => {
 		model[methodName] = modelPrototype[methodName].bind(model)
@@ -79,7 +77,7 @@ exports.create = (spec) => {
 	return model
 }
 
-exports.parse = function(attrs, options={}) {
+internals.parse = function(attrs, options={}) {
 	const schema = options.schema || this.schema()
 
 	return attrs.map((modelValue, modelProp) => {
@@ -121,11 +119,12 @@ exports.parse = function(attrs, options={}) {
 	})
 }
 
-exports.serialize = function(model, options) {
+internals.serialize = function(model, options) {
 	Invariant(exports.isModel(model) || Immutable.Iterable.isIterable(model), 'Model instance or Immutable.Iterable required to serialize it')
 	Invariant(!options || _isPlainObject(options), 'Options, when passed, must be a plain object when serializing a model instance')
 
 	if (!options) options = {}
+	const omitMeta = !_isUndefined(options.omitMeta) ? options.omitMeta : true
 
 	const schema = options.schema || this.schema()
 
@@ -158,7 +157,7 @@ exports.serialize = function(model, options) {
 				Immutable.Iterable.isIndexed(modelValue) && _isArray(nestedSchema) ||
 				Immutable.Iterable.isKeyed(modelValue) && _isPlainObject(nestedSchema)
 		) {
-				return exports.serialize.call(this, modelValue, _assign({}, options, { schema: nestedSchema }))
+				return this.serialize(modelValue, _assign({}, options, { schema: nestedSchema }))
 			}
 		}
 
@@ -166,7 +165,11 @@ exports.serialize = function(model, options) {
 		return modelValue
 	})
 
-	return State.serialize(partial, options)
+	if (!omitMeta) {
+		return partial.toJS();
+	} else {
+		return partial.filter((value, key) => key !== Props.cid).toJS();
+	}
 }
 
 module.exports = _assign(internals.Model, exports) 

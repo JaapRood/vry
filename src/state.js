@@ -37,8 +37,8 @@ exports.create = function(name, defaults) {
 		factory,
 		Merge.create(identity, factory),
 		{
-			parse: exports.parse,
-			serialize: exports.serialize
+			parse: internals.parse,
+			serialize: internals.serialize
 		}
 	)
 
@@ -53,11 +53,11 @@ exports.create = function(name, defaults) {
 	return state
 };
 
-exports.parse = (attrs) => {
+internals.parse = (attrs) => {
 	return attrs
 }
 
-exports.serialize = (state, optionsOrOmit) => {
+internals.serialize = (state, optionsOrOmit) => {
 	var options;
 
 	// TODO: deprecate passing anything but options in v2
@@ -72,7 +72,6 @@ exports.serialize = (state, optionsOrOmit) => {
 
 	if (!options) options = {}
 	const omitMeta = !_isUndefined(options.omitMeta) ? options.omitMeta : true
-
 
 	if (!omitMeta) {
 		return state.toJS();
