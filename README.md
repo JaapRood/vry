@@ -285,7 +285,7 @@ console.log(plainUser)
 
 ### var mergedInstance = type.merge(target, source)
 
-Merges anything from plain attributes to other instances (of the same type) with an existing instance. Any attributes present in the `source` will override the ones in `target`, except for the meta data of `target`.
+Merges anything from plain attributes to other instances (even of a different type) with an existing instance. Any attributes present in the `source` will override the ones in `target`, except for the meta data of `target`.
 
 - `target` - (required) `Immutable.Iterable` that represents an instance created with `type.factory` which will be the target of this merge
 - `source` - (required) `object` or `Immutable.Iterable` of attributes to be merged with the target
