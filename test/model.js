@@ -335,3 +335,63 @@ Test('model.serialize', function(t) {
 		t.deepEqual(withContext, withoutContext, 'returns the same when called out of context')
 	}, 'can be called without context')
 })
+
+Test('model.merge', function(t) {
+	t.plan(3 + 4 + 2 + 2)
+
+	const rawDefaults = {
+		c: 1
+	}
+
+	const TestModel = Model.create({
+		name: 'test-state', 
+		defaults: rawDefaults
+	})
+	const OtherModel = Model.create({
+		name: 'other-state', 
+		defaults: rawDefaults
+	})
+
+	const baseInstance = TestModel.factory({
+		a: 1,
+		c: 3
+	})
+
+	const rawSource = {
+		a: 2,
+		b: 3
+	}
+
+	const sourceInstance = TestModel.factory(rawSource)
+	const otherInstance = OtherModel.factory(rawSource)
+
+	t.doesNotThrow(function() {
+		const mergedInstance = TestModel.merge(baseInstance, rawSource)
+
+		t.ok(TestModel.instanceOf(mergedInstance), 'returns an updated instance')
+		t.ok(mergedInstance.equals(baseInstance.merge(rawSource)), 'updated instance has attributes of source merged into instance')
+	}, 'accepts a Model instance and a plain object of new attributes')
+
+	t.doesNotThrow(function() {
+		const mergedInstance = TestModel.merge(baseInstance, sourceInstance)
+
+		t.ok(TestModel.instanceOf(mergedInstance), 'returns an updated instance')
+
+		t.ok(mergedInstance.equals(baseInstance.merge(rawDefaults, rawSource)), 'updated instance has attributes of source merged into base')
+		t.equals(mergedInstance.get('__cid'), baseInstance.get('__cid'), 'updated instance has client identifer `__cid` from base')
+	}, 'accepts two Model instances, a base and source')
+
+	t.doesNotThrow(function() {
+		const withContext = TestModel.merge(baseInstance, sourceInstance)
+		const withoutContext = TestModel.merge.call(null, baseInstance, sourceInstance)
+
+		t.ok(withContext.equals(withoutContext), 'returns the same when called out of context')
+	}, 'can be called without context')
+
+	t.doesNotThrow(function() {
+		const mergedInstance = TestModel.merge(baseInstance, otherInstance)
+
+		t.ok(TestModel.instanceOf(mergedInstance), 'returns an updated instance of the type of the base')
+	}, 'accepts a base and source instance with a different state type')
+})
+
