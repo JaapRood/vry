@@ -276,13 +276,14 @@ Test('state.serialize', function(t) {
 });
 
 Test('state.merge', function(t) {
-	t.plan(3 + 4 + 2)
+	t.plan(3 + 4 + 2 + 2)
 
 	const rawDefaults = {
 		c: 1
 	}
 
 	const TestState = State.create('test-state', rawDefaults)
+	const OtherState = State.create('other-state', rawDefaults)
 
 	const baseInstance = TestState.factory({
 		a: 1,
@@ -295,6 +296,7 @@ Test('state.merge', function(t) {
 	}
 
 	const sourceInstance = TestState.factory(rawSource)
+	const otherInstance = OtherState.factory(rawSource)
 
 	t.doesNotThrow(function() {
 		const mergedInstance = TestState.merge(baseInstance, rawSource)
@@ -317,4 +319,10 @@ Test('state.merge', function(t) {
 
 		t.ok(withContext.equals(withoutContext), 'returns the same when called out of context')
 	}, 'can be called without context')
+
+	t.doesNotThrow(function() {
+		const mergedInstance = TestState.merge(baseInstance, otherInstance)
+
+		t.ok(TestState.instanceOf(mergedInstance), 'returns an updated instance of the type of the base')
+	}, 'accepts a base and source instance with a different state type')
 })

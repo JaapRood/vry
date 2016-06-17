@@ -23,5 +23,5 @@ internals.merge = function(state, data) {
 		data = this.factory(data).filter((val, key) => dataKeys.includes(key))
 	}
 
-	return state.merge(data.remove(Props.cid));
+	return state.merge(data.remove(Props.cid).remove(Props.name));
 }
