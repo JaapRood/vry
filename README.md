@@ -306,3 +306,33 @@ console.log(activatedHomer)
 //    activated: true
 //  }
 ```
+## Ref
+
+### var ref = Ref.create(path)
+
+### var subject = Ref.resolve(ref, source)
+
+### var collection = Ref.resolveCollection(ref, source)
+
+### var subject = Ref.replaceIn(source, subject, ...paths)
+
+
+## Schema 
+
+A `Schema` is an object to describe the relationships between various `Model` types. Each `Model` type has one, detailing what other `Model` types are embedded within it and with what shape.
+
+### var isSchema = Schema.isSchema(maybeSchema)
+
+### var isIterableSchema = Schema.isIterableSchema(maybeSchema)
+
+### var isType = Schema.isType(maybeSchema)
+
+### var listSchema = Schema.listOf(modelType)
+
+### var setSchema =  Schema.setOf(modelType)
+
+### var orderedSetSchema = Schema.orderedSetOf(modelType)
+
+### Schema.orderedSetOf
+
+
