@@ -305,6 +305,50 @@ console.log(activatedHomer)
 //    activated: true
 //  }
 ```
+
+## Model
+
+The `Model` is a lot like `State`, but goes beyond the basics of just maintaining an entity's identity and defaults. So far that means enhanced parsing and serialising of nested models within other models by use of a `Schema`. Soon merging will join that club too, as well the concept of comparing instances by id attributes. Any other enhancements to working with entities that go beyond the logic of a single depth entity (`State`) that we'll make in the future will probably end up on `Model` too. 
+
+### var type = Model.create(spec)
+
+Create a new type of Model. Returns an object with methods to work with the created model type.
+
+- `spec` - (required) string or object - either a string with the name of the model type or an object with values for the following properties:
+  - `name` - (required) name of the state type
+  - `defaults` - plain object or `Immutable.Iterable` of default key-value pairs that are used as the base of every instance. Same as `defaults` argument for `State.create(name, defaults)`
+  - `schema` - schema definition that describes any nested models. See the documentation for `Schema` 
+
+```js
+const Vry = require('vry')
+
+const User = Vry.Model.create({
+  name: 'user',
+
+  defaults: {
+    name: 'New user',
+    email: null,
+    activated: false
+  }
+})
+
+const Post = Vry.Model.create({
+  name: 'post',
+
+  defaults: {
+    title: 'Untitled post',
+    body: '',
+    author: null
+  },
+
+  schema: {
+    author: User
+  }
+})
+```
+
+Note: All methods are bound to the state itself, so you can call them without binding them manually. For the unbound versions, see the prototype of the created type (`state.prototype`). Methods added after creation are not bound automatically.
+
 ## Ref
 
 ### var ref = Ref.create(path)
