@@ -117,6 +117,8 @@ Returns a boolean indicating whether the passed value is an instance of **any** 
 
 - `maybeState` - any value
 
+**Note:** with the current implementation a `Model` instance will also pass this test.
+
 ```js
 const notStateUser = Immutable.Map({ name: 'Homer '})
 const user = User.factory(notStateUser)
@@ -315,7 +317,7 @@ The `Model` is a lot like `State`, but goes beyond the basics of just maintainin
 Create a new type of Model. Returns an object with methods to work with the created model type.
 
 - `spec` - (required) string or object - either a string with the name of the model type or an object with values for the following properties:
-  - `name` - (required) name of the state type
+  - `typeName` - (required) name of the model type
   - `defaults` - plain object or `Immutable.Iterable` of default key-value pairs that are used as the base of every instance. Same as `defaults` argument for `State.create(name, defaults)`
   - `schema` - schema definition that describes any nested models. See the documentation for `Schema` 
 
@@ -323,7 +325,7 @@ Create a new type of Model. Returns an object with methods to work with the crea
 const Vry = require('vry')
 
 const User = Vry.Model.create({
-  name: 'user',
+  typeName: 'user',
 
   defaults: {
     name: 'New user',
@@ -333,7 +335,7 @@ const User = Vry.Model.create({
 })
 
 const Post = Vry.Model.create({
-  name: 'post',
+  typeName: 'post',
 
   defaults: {
     title: 'Untitled post',
@@ -348,6 +350,67 @@ const Post = Vry.Model.create({
 ```
 
 Note: All methods are bound to the state itself, so you can call them without binding them manually. For the unbound versions, see the prototype of the created type (`state.prototype`). Methods added after creation are not bound automatically.
+
+### var isModelInstance = Model.isModel(maybeModel)
+
+Returns a boolean indicating whether the passed value is an instance of **any** model type. It's useful where `Immutable.Map.isMap` is not sufficient for your logic, for example when you need to know the meta attributes are present.
+
+**Note:** with the current implementation a `State` instance will also pass this test.
+
+- `maybeModel` - any value
+
+```js
+const notStateUser = Immutable.Map({ name: 'Homer '})
+const user = User.factory(notStateUser)
+
+console.log(Model.isModel(notStateUser)) // false
+console.log(Model.isModel(user)) // true
+```
+
+### var defaults = type.defaults()
+
+Returns the defaults as defined with `Model.create`, represented as an `Immutable.Map`.
+
+```js
+const User = Vry.Model.create({
+  typeName: 'user',
+
+  defaults: {
+    name: 'New user',
+    email: null,
+    activated: false
+  }
+})
+
+const defaults = User.defaults()
+
+console.log(defaults)
+//  Immutable.Map {
+//    name: 'New user',
+//    email: null,
+//    activated: false
+//  }
+```
+
+### var typeName = type.typeName()
+
+Returns the name (string) as defined with `Model.create`.
+
+```js
+const User = Vry.Model.create({
+  typeName: 'user',
+
+  defaults: {
+    name: 'New user',
+    email: null,
+    activated: false
+  }
+})
+
+const typeName = User.typeName()
+
+console.log(typeName) // 'user'
+```
 
 ## Ref
 
