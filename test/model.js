@@ -24,7 +24,7 @@ Test('Model.create', function(t) {
 
 	t.doesNotThrow(function() {
 		const model = Model.create({
-			name: 'test-model'
+			typeName: 'test-model'
 		})
 
 		t.ok(model instanceof Model, 'returns an object that is an instance of Model')
@@ -50,7 +50,7 @@ Test('Model.create', function(t) {
 			a: 'some-value'
 		}
 		const model = Model.create({
-			name: 'test-model',
+			typeName: 'test-model',
 			defaults: defaults
 		})
 
@@ -65,7 +65,7 @@ Test('Model.create', function(t) {
 		}
 
 		const model = Model.create({
-			name: 'test-model',
+			typeName: 'test-model',
 			schema: schema
 		})
 
@@ -77,7 +77,7 @@ Test('model.factory - parse', function(t) {
 	t.plan(1 + 10 + 1)
 
 	const OtherModel = Model.create({
-		name: 'woo'
+		typeName: 'woo'
 	})
 
 	const inputA = 'a';
@@ -122,7 +122,7 @@ Test('model.factory - parse', function(t) {
 	}
 
 	const TestModel = Model.create({
-		name: 'testModel',
+		typeName: 'testModel',
 		schema: schema
 	})
 
@@ -184,7 +184,7 @@ Test('model.defaults', function(t) {
 
 	const defaults = { a: 1, nested: { b: 2 }}
 	const TestModel = Model.create({
-		name: 'test',
+		typeName: 'test',
 		defaults: defaults
 	})
 
@@ -200,7 +200,7 @@ Test('model.schema', function(t) {
 		a: { factory: _.identity }
 	}
 	const TestModel = Model.create({
-		name: 'test',
+		typeName: 'test',
 		schema: schema
 	})
 
@@ -213,7 +213,7 @@ Test('model.serialize', function(t) {
 	t.plan(15 + 3 + 2)
 
 	const OtherModel = Model.create({
-		name: 'woo'
+		typeName: 'woo'
 	})
 
 	const noopFactory = (val) => val
@@ -273,7 +273,7 @@ Test('model.serialize', function(t) {
 	}
 
 	const TestModel = Model.create({
-		name: 'test-model',
+		typeName: 'test-model',
 		schema: schema
 	})
 
@@ -344,11 +344,11 @@ Test('model.merge', function(t) {
 	}
 
 	const TestModel = Model.create({
-		name: 'test-state', 
+		typeName: 'test-state', 
 		defaults: rawDefaults
 	})
 	const OtherModel = Model.create({
-		name: 'other-state', 
+		typeName: 'other-state', 
 		defaults: rawDefaults
 	})
 

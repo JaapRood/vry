@@ -31,15 +31,15 @@ exports.create = (spec) => {
 	Invariant(
 		_isString(spec) ||
 		_isPlainObject(spec) &&
-		spec.name && _isString(spec.name)
-	, 'A name or a plain object (spec) with a name is required to create a model')
+		spec.typeName && _isString(spec.typeName)
+	, 'A typeName or a plain object (spec) with a typeName is required to create a model')
 
 	if (_isString(spec)) {
-		spec = { name: spec }
+		spec = { typeName: spec }
 	}
 
 	const {
-		name,
+		typeName,
 		defaults
 	} = spec
 
@@ -50,7 +50,7 @@ exports.create = (spec) => {
 	
 	if (!schema) schema = {}
 
-	const identity = Identity.create(name)
+	const identity = Identity.create(typeName)
 	const factory = Factory.create(defaults)
 	const merge = Merge.create(identity, factory)
 
