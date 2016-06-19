@@ -90,8 +90,7 @@ In addition to `State`:
 
 ## State
 
-State is the most basic type in Vry. It allows you to create instances of a type with defaults in place, identify instances, merge them, serialize them back to plain javascript objects as well as spec.
-
+State is the most basic type in Vry. It allows you to create instances of a type with defaults in place, identify instances, merge them and serialize them back to plain javascript objects.
 
 ### var type = State.create(name, defaults)
 
