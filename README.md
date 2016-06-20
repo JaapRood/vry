@@ -416,7 +416,7 @@ console.log(typeName) // 'user'
 
 Returns a new instance (`Immutable.Map`) of the model using the model's defaults as a base and populated with the passed attributes. It also adds some meta data to keep track of the instance identity and uses the defined schema to defer creating nested models with their own `factory` methods.
 
-- `attributes` - `object` or any `Immutable.Iterable` of key-value pairs with which the type defaults will be overridden and amended. The model's schema is used to handle the creation of nested instances. Nested `object`s and `array`s are converted to `Immutable.Map`and `Immutable.List` respectively, while any `Immutable.Iterable`s will be left untouched. 
+- `attributes` - `object` or any `Immutable.Iterable` of key-value pairs with which the type defaults will be overridden and amended. The model's schema is used to handle the creation of nested types. Nested `object`s and `array`s are converted to `Immutable.Map`and `Immutable.List` respectively, while any `Immutable.Iterable`s will be left untouched. 
 - `options` - `object` with the following keys
   - `parse` - `function` as described by `state.parse` that is to be used instead of `state.parse` to transform the passed in `attributes`.
 
@@ -621,20 +621,89 @@ console.log(activatedHomer)
 
 ## Schema 
 
-A `Schema` is an object to describe the relationships between various `Model` types. Each `Model` type has one, detailing what other `Model` types are embedded within it and with what shape.
+A `Schema` is an object to describe how other types are embedded within a given type. It specifies the shape, as well as how the embedded types should be created, identified and serialized back to plain objects and arrays. 
+
+Each `Model` type has one, detailing what other `Model` types are embedded within it.
+
+Schema's are plain javascript objects with either a type definition (see `Schema.isType`) or a nested schema specified as values. There isn't a `Schema.create` method to create schemas (yet).
+
+```js
+// user has no embedded types
+const postSchema = {
+  title: {
+    factory(value) { return value.toUpperCase() },
+    serialize(value) { return value.toLowerCase() }
+  },
+
+  author: User, // Types created with `Model.create` and `State.create` are valid type definitions!
+
+  // use `Schema.listOf` and `Schema.setOf` to convienently create types for nested 
+  comments: Schema.listOf(Comment),
+
+  metadata: { // schemas can be nested
+    tags: Schema.setOf(Tag)
+  }
+}
+```
 
 ### var isSchema = Schema.isSchema(maybeSchema)
 
+Returns whether a value is a valid schema definition. A valid schema is an `object` with either a valid type definition (see `Schema.isType`) or a nested schema. 
+
+- `maybeSchema` - any value
+
+```js
+const postSchema = {
+  title: { // valid type definition
+    factory(value) { return value.toUpperCase() },
+    serialize(value) { return value.toLowerCase() }
+  }
+}
+
+const userSchema = {
+  name: "woohoo" // not a valid type definition
+}
+
+console.log(Schema.isSchema(postSchema)) // true
+console.log(Schema.isSchema(userSchema)) // false
+```
+
+### var isType = Schema.isType(maybeType)
+
+Returns whether a value is a valid type definition. 
+
+- `maybeType` - any value
+
+A valid type definition is an `object` with at least one of the following keys defined as described:
+
+- `factory` - function with the signature `var instance = function(plainValue, options)`
+- `serialize` - function with the signature `var plainValue = function(isntance, options)`
+
+The following keys can be defined as well
+
+- `instanceOf` - function with signature `var isInstance = function(maybeInstance)`
+
+### var listSchema = Schema.listOf(definition)
+
+Returns a schema definition (`IterableSchema`) describing an `Immutable.List` of a schema or type.
+
+- `definition` - either a valid schema or type definition
+
+### var setSchema =  Schema.setOf(definition)
+
+Returns a schema definition (`IterableSchema`) describing an `Immutable.Set` of a schema or type.
+
+- `definition` - either a valid schema or type definition
+
+### var orderedSetSchema = Schema.orderedSetOf(definition)
+
+Returns a schema definition (`IterableSchema`) describing an `Immutable.OrderedSet` of a schema or type.
+
+- `definition` - either a valid schema or type definition
+
 ### var isIterableSchema = Schema.isIterableSchema(maybeSchema)
 
-### var isType = Schema.isType(maybeSchema)
+Returns whether the value is a special `IterableSchema`, which are the special schema definitions returned by methods like `Schema.listOf`.
 
-### var listSchema = Schema.listOf(modelType)
-
-### var setSchema =  Schema.setOf(modelType)
-
-### var orderedSetSchema = Schema.orderedSetOf(modelType)
-
-### Schema.orderedSetOf
-
+- `maybeSchema` - any value
 
