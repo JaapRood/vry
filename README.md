@@ -615,14 +615,187 @@ console.log(activatedHomer)
 
 ## Ref
 
+A `Ref`, short for reference, is a bit of state that points to another bit of state. In practice it's used to allow for a single instance of an entity to be stored in one place, with any other uses of it referring back to the original. It's implemented as a `State` type using `State.create`, meaning that a reference is just another `Immutable.Map` of a specific shape.
+
+A common example of a ref in a data model is something like a `user_id` inside a `Post` to point the author by the id string of a `User`. However, when reading the post, the user will have to be looked up separately. Using a `Ref` instead of a plain id allows for automatic resolving of the user.
+
+As we've implemented it so far the `Ref` points to something by use of a path. What this path is relative to is completely flexible and up to you. That makes it a pretty low-level construct. However, I do have the intention to implement `Ref`s based on a type definition and id instead, as part of the efforts for a `Graph` construct.
+
+
 ### var ref = Ref.create(path)
+
+Returns a `Immutable.Map` that represents the `Ref` with the specified path.
+
+- `path` - (required) either a string, or an array / `Immutable.List` of strings, specifying the path to target
+
+```js
+const Vry = require('vry')
+
+const User = Vry.State.create('user', {
+  name: 'New user',
+  email: null,
+  activated: false
+})
+
+const Post = Vry.State.create('post', {
+  title: 'New post',
+  author: null
+})
+
+const appState = Immutable.Map({
+  usersById: Immutable.Map({
+    3: User.factory({ name: 'Homer' }),
+    5: User.factory({ name: 'Marge' })
+  })
+
+})
+
+const post = Post.factory({
+  title: 'Keeping skyscrapers from collapsing',
+  author: Ref.create(['usersById', 3]) // choosing `appState` as the root of this reference
+})
+```
+
+**Note**: a instance of `Ref`, just like a relative path, _holds no reference to what it's relative to_. It's up to the user to apply it in the right way.
 
 ### var subject = Ref.resolve(ref, source)
 
-### var collection = Ref.resolveCollection(ref, source)
+Returns the value the `ref` is pointing to inside the `source`. Returns `undefined` when the path inside `source` does not exist.
+
+- `ref` - (required) instance of the `Ref` to be resolved
+- `source` - (required) `Immutable.Iterable` to look up the `ref` in
+
+```js
+const appState = Immutable.Map({
+  usersById: Immutable.Map({
+    3: User.factory({ name: 'Homer' }),
+    5: User.factory({ name: 'Marge' }),
+    6: User.factory({ name: 'Bart' })
+  })
+
+})
+
+const post = Post.factory({
+  title: 'Keeping skyscrapers from collapsing',
+  author: Ref.create(['usersById', 3]) // choosing `appState` as the root of this reference
+})
+
+const postAuthor = Ref.resolve(post.get('author'), appState)
+
+console.log(postAuthor)
+//  Immutable.Map {
+//    name: 'Homer',
+//    ...
+//  }
+```
+
+### var collection = Ref.resolveCollection(refs, source)
+
+Resolves all the `Ref` instances inside an `Immutable.Collection` using a `source`.
+
+- `refs` - (required) `Immutable.Collection` containing only `Ref` instances
+- `source` - (required) `Immutable.Iterable` to look up the `refs` in
+
+```js
+const appState = Immutable.Map({
+  usersById: Immutable.Map({
+    3: User.factory({ name: 'Homer' }),
+    5: User.factory({ name: 'Marge' }),
+    6: User.factory({ name: 'Bart' })
+  })
+
+})
+
+const post = Post.factory({
+  title: 'Keeping skyscrapers from collapsing',
+  likers: [
+    Ref.create(['usersById', 5]), // choosing `appState` as the root of this reference
+    Ref.create(['usersById', 6])
+  ]
+})
+
+const postLikers = Ref.resolveCollection(post.get('likers'), appState)
+
+console.log(postLikers)
+//  Immutable.List [
+//    Immutable.Map {
+//      name: 'Marge',
+//      ...
+//    },
+//    Immutable.Map {
+//      name: 'Bart',
+//      ...
+//    }
+// 
+//  ]
+```
+
 
 ### var subject = Ref.replaceIn(source, subject, ...paths)
 
+Returns an updated `subject` in which all references encountered at the given `paths` inside the `subject` are resolved against a single source. When the path can not be found inside the `subject`, it's ignored. When a `reference` along a `path` can not be resolved, the rest of that path is ignored.
+
+- `source` - (required) `Immutable.Iterable` the source in which to look up any encountered references
+- `subject` - (required) `Immutable.Iterable` the subject for which to resolve any references
+- `...paths` - (required) string or array / `Immutable.Iterable` of strings that represent a path in `subject`. Paths are traversed up to the point that it exists. The rest is ignored
+
+```js
+const appState = Immutable.Map({
+  usersById: Immutable.Map({
+    3: User.factory({ 
+      name: 'Homer',
+      friends: [
+        Ref.create(['usersById', 5]),
+        Ref.create(['usersById', 6])
+      ]
+    }),
+    5: User.factory({ name: 'Marge' }),
+    6: User.factory({ name: 'Bart' })
+  })
+
+})
+
+const post = Post.factory({
+  title: 'Keeping skyscrapers from collapsing',
+  author: Ref.create(['usersById', 3]),
+  likers: [
+    Ref.create(['usersById', 5]), // choosing `appState` as the root of this reference
+    Ref.create(['usersById', 6])
+  ]
+})
+
+const resolvedPost = Ref.replaceIn(appState, post, ['author', 'friends'], 'likers')
+
+console.log(resolvedPost)
+//  Immutable.Map {
+//    likers: Immutable.List [
+//      Immutable.Map {
+//        name: 'Marge',
+//        ...
+//      },
+//      Immutable.Map {
+//        name: 'Bart',
+//        ...
+//      }
+//    ],
+//    
+//    author: Immutable.Map {
+//      name: 'Homer',
+//      friends: Immutable.List [
+//        Immutable.Map {
+//          name: 'Marge',
+//          ...
+//        },
+//        Immutable.Map {
+//          name: 'Bart',
+//          ...
+//        }
+//      ],
+//      ...
+//    }
+//  }
+//  
+```
 
 ## Schema 
 
