@@ -567,7 +567,7 @@ console.log(post.get('user').get('name')) // "Homer"
 
 ### var serialized = model.serialize(instance, options)
 
-Returns the passed instance as a plain object. Defers the serialising of nested types to their `serialize` methods when defined (see [`Schema`](#schema)).
+Returns the passed instance as a plain object. Defers the serialising of nested types to their `serialize` methods when defined (see [`Schema`](#schema)). Any references (instances of `Ref`) are serialized as one.
 
 - `instance` - (required) `Immutable.Iterable` that represents an instance created with `state.factory`
 - `options` - `object` with the following keys

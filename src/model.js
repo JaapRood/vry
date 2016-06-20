@@ -139,7 +139,10 @@ internals.serialize = function(model, options) {
 		if (Schema.isType(definition)) {
 			let type = definition
 
-			if (
+
+			if (Ref.instanceOf(modelValue)) {
+				return Ref.serialize(modelValue)
+			} else if (
 				// no serializer or the value is not an instance of the type
 				!_isFunction(type.serialize) || 
 				(_isFunction(type.instanceOf) && !Schema.instanceOfType(type, modelValue))

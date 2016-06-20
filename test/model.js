@@ -221,7 +221,7 @@ Test('model.schema', function(t) {
 })
 
 Test('model.serialize', function(t) {
-	t.plan(15 + 3 + 2)
+	t.plan(15 + 3 + 2 + 2)
 
 	const OtherModel = Model.create({
 		typeName: 'woo'
@@ -336,6 +336,18 @@ Test('model.serialize', function(t) {
 
 		t.equal(serialized.__cid, instance.get('__cid'), 'the client side identifier is included when passing `omitMeta: false` as an option')
 	}, 'accepts a model instance and an object of options')
+
+	t.doesNotThrow(() => {
+		const ref = Ref.create(['some', 'non-existing', 'path']) 
+
+		const instance = TestModel.factory({
+			a: ref
+		})
+
+		const serialized = TestModel.serialize(instance)
+
+		t.deepEqual(serialized.a, Ref.serialize(ref), 'when attribute value is a Ref instance it is serialized using `Ref.serialize`')
+	}, 'accepts Ref instances as attribute values')
 
 	t.doesNotThrow(() => {
 		const instance = TestModel.factory({ someProp: inputA })
