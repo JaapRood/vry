@@ -92,7 +92,7 @@ In addition to `State`:
 
 State is the most basic type in Vry. It allows you to create instances of a type with defaults in place, identify instances, merge them and serialize them back to plain javascript objects.
 
-### var type = State.create(name, defaults)
+### var state = State.create(name, defaults)
 
 Create a new type of State. Returns an object with methods to work with the created state type. 
 
@@ -127,7 +127,7 @@ console.log(State.isState(notStateUser)) // false
 console.log(State.isState(user)) // true
 ```
 
-### var defaults = type.defaults()
+### var defaults = state.defaults()
 
 Returns the defaults as defined with `State.create`, represented as an `Immutable.Map`.
 
@@ -148,7 +148,7 @@ console.log(defaults)
 //  }
 ```
 
-### var name = type.typeName()
+### var name = state.typeName()
 
 Returns the name (string) as defined with `State.create`.
 
@@ -164,13 +164,13 @@ const name = User.typeName()
 console.log(name) // 'user'
 ```
 
-### var instance = type.factory(attributes, options)
+### var instance = state.factory(attributes, options)
 
 Returns a new instance (`Immutable.Map`) of the state type using the type's defaults as a base and populated with the passed attributes. It also adds some meta data to keep track of the instance identity.
 
 - `attributes` - `object` or any `Immutable.Iterable` of key-value pairs with which the type defaults will be overridden and amended. Nested `object`s and `array`s are converted to `Immutable.Map`and `Immutable.List` respectively, while any `Immutable.Iterable`s will be left untouched. 
 - `options` - `object` with the following keys
-  - `parse` - `function` as described by `type.parse` that is to be used instead of `type.parse` to transform the passed in `attributes`.
+  - `parse` - `function` as described by `state.parse` that is to be used instead of `state.parse` to transform the passed in `attributes`.
 
 ```js
 const User = Vry.State.create('user', {
@@ -191,9 +191,9 @@ console.log(user)
 //  }
 ```
 
-### var isTypeInstance = type.instanceOf(maybeInstance)
+### var isTypeInstance = state.instanceOf(maybeInstance)
 
-Returns a boolean indicating whether the passed value is an "instance" of this type. 
+Returns a boolean indicating whether the passed value is an "instance" of this state. 
 
 - `maybeInstance` - any value
 
@@ -205,9 +205,9 @@ console.log(User.instanceOf(user)) // true
 console.log(User.instanceOf(post)) // false
 ```
 
-### var isCollectionOfType = type.collectionOf(maybeCollection)
+### var isCollectionOfType = state.collectionOf(maybeCollection)
 
-Returns a boolean indicating whether the passed value is an `Immutable.Collection` (and so by extension things like `Immutable.List`, `Immutable.Set`, etc) of which all values are an instance of that type. Basically `collection.every(type.instanceOf)`.
+Returns a boolean indicating whether the passed value is an `Immutable.Collection` (and so by extension things like `Immutable.List`, `Immutable.Set`, etc) of which all values are an instance of that state. Basically `collection.every(state.instanceOf)`.
 
 - `maybeCollection` - any value
 
@@ -232,9 +232,9 @@ console.log(User.collectionOf(posts)) // false
 console.log(User.collectionOf(mixed)) // false
 ```
 
-### var transformedMap = type.parse(attributes)
+### var transformedMap = state.parse(attributes)
 
-A place to implement custom parsing behaviour. This method gets called by `type.factory` unless it got called with a `parse` option, in which case `type.parse` will be ignored. 
+A place to implement custom parsing behaviour. This method gets called by `state.factory` unless it got called with a `parse` option, in which case `state.parse` will be ignored. 
 
 Must return a `Immutable.Iterable`. Any `Immutable.Seq`s returned are converted into `Immutable.Map` and `Immutable.List`. By default this method is a no-op, simply returning the attributes passed in.
 
@@ -261,11 +261,11 @@ const user = User.factory({
 console.log(user.get('name')) // "Homer"
 ```
 
-### var serialized = type.serialize(instance, options)
+### var serialized = state.serialize(instance, options)
 
 Returns the passed instance as a plain object. 
 
-- `instance` - (required) `Immutable.Iterable` that represents an instance created with `type.factory`
+- `instance` - (required) `Immutable.Iterable` that represents an instance created with `state.factory`
 - `options` - `object` with the following keys
   - `omitMeta` - when falsey the identity meta data will be included in the result. Defaults to `true`
 
@@ -284,11 +284,11 @@ console.log(plainUser)
 // }
 ```
 
-### var mergedInstance = type.merge(target, source)
+### var mergedInstance = state.merge(target, source)
 
 Merges anything from plain attributes to other instances (even of a different type) with an existing instance. Any attributes present in the `source` will override the ones in `target`, except for the meta data of `target`.
 
-- `target` - (required) `Immutable.Iterable` that represents an instance created with `type.factory` which will be the target of this merge
+- `target` - (required) `Immutable.Iterable` that represents an instance created with `state.factory` which will be the target of this merge
 - `source` - (required) `object` or `Immutable.Iterable` of attributes to be merged with the target
 
 ```js
@@ -312,14 +312,14 @@ console.log(activatedHomer)
 
 The `Model` is a lot like `State`, but goes beyond the basics of just maintaining an entity's identity and defaults. So far that means enhanced parsing and serialising of nested models within other models by use of a `Schema`. Soon merging will join that club too, as well the concept of comparing instances by id attributes. Any other enhancements to working with entities that go beyond the logic of a single depth entity (`State`) that we'll make in the future will probably end up on `Model` too. 
 
-### var type = Model.create(spec)
+### var model = Model.create(spec)
 
 Create a new type of Model. Returns an object with methods to work with the created model type.
 
 - `spec` - (required) string or object - either a string with the name of the model type or an object with values for the following properties:
   - `typeName` - (required) name of the model type
   - `defaults` - plain object or `Immutable.Iterable` of default key-value pairs that are used as the base of every instance. Same as `defaults` argument for `State.create(name, defaults)`
-  - `schema` - schema definition that describes any nested models. See the documentation for `Schema` 
+  - `schema` - schema definition that describes any nested models. See the documentation for [`Schema`](#schema).
 
 ```js
 const Vry = require('vry')
@@ -367,7 +367,7 @@ console.log(Model.isModel(notStateUser)) // false
 console.log(Model.isModel(user)) // true
 ```
 
-### var defaults = type.defaults()
+### var defaults = model.defaults()
 
 Returns the defaults as defined with `Model.create`, represented as an `Immutable.Map`.
 
@@ -392,7 +392,7 @@ console.log(defaults)
 //  }
 ```
 
-### var typeName = type.typeName()
+### var typeName = model.typeName()
 
 Returns the name (string) as defined with `Model.create`.
 
@@ -410,6 +410,202 @@ const User = Vry.Model.create({
 const typeName = User.typeName()
 
 console.log(typeName) // 'user'
+```
+
+### var instance = model.factory(attributes, options)
+
+Returns a new instance (`Immutable.Map`) of the model using the model's defaults as a base and populated with the passed attributes. It also adds some meta data to keep track of the instance identity and uses the defined schema to defer creating nested models with their own `factory` methods.
+
+- `attributes` - `object` or any `Immutable.Iterable` of key-value pairs with which the type defaults will be overridden and amended. The model's schema is used to handle the creation of nested instances. Nested `object`s and `array`s are converted to `Immutable.Map`and `Immutable.List` respectively, while any `Immutable.Iterable`s will be left untouched. 
+- `options` - `object` with the following keys
+  - `parse` - `function` as described by `state.parse` that is to be used instead of `state.parse` to transform the passed in `attributes`.
+
+```js
+
+const User = Vry.Model.create({
+  typeName: 'user',
+
+  defaults: {
+    name: 'New user',
+    email: null,
+    activated: false
+  }
+})
+
+const Post = Vry.Model.create({
+  typeName: 'post',
+
+  defaults: {
+    title: 'Untitled post',
+    body: '',
+    author: null
+  },
+
+  schema: {
+    author: User
+  }
+})
+
+const post = Post.factory({
+  title: 'A Totally Great Post',
+  author: {
+    name: 'Homer'
+  }
+})
+
+console.log(post)
+//  Immutable.Map {
+//    title: 'A Totally Great Post',
+//    body: '',
+//    author: Immutable.Map {
+//      name: 'Homer',
+//      email: null,
+//      activated: false
+//    }
+//  }
+```
+
+### var isTypeInstance = model.instanceOf(maybeInstance)
+
+Returns a boolean indicating whether the passed value is an "instance" of this type. 
+
+- `maybeInstance` - any value
+
+```js
+const user = User.factory()
+const post = Post.factory()
+
+console.log(User.instanceOf(user)) // true
+console.log(User.instanceOf(post)) // false
+```
+
+### var isCollectionOfType = model.collectionOf(maybeCollection)
+
+Returns a boolean indicating whether the passed value is an `Immutable.Collection` (and so by extension things like `Immutable.List`, `Immutable.Set`, etc) of which all values are an instance of that type. Basically `collection.every(model.instanceOf)`.
+
+- `maybeCollection` - any value
+
+```js
+const users = Immutable.List([
+  User.factory(),
+  User.factory()
+])
+
+const posts = Immutable.List([
+  Post.factory(),
+  Post.factory()
+])
+
+const mixed = Immutable.List([
+  User.factory(),
+  Post.factory()
+])
+
+console.log(User.collectionOf(users)) // true
+console.log(User.collectionOf(posts)) // false
+console.log(User.collectionOf(mixed)) // false
+```
+
+### var transformedMap = model.parse(attributes)
+
+A place to implement custom parsing behaviour. This method gets called by `type.factory` unless it got called with a `parse` option, in which case `type.parse` will be ignored. 
+
+Must return a `Immutable.Iterable`. Any `Immutable.Seq`s returned are converted into `Immutable.Map` and `Immutable.List`.
+
+By default it uses the `Schema` of the model to defer the parsing of other nested models to their own methods. 
+
+- `attributes` - (required) `Immutable.Map` of attributes. Any plain `object`s or `array`s are represented as `Immutable.Seq`s (`Keyed` and `Indexed` respectively), making it easy to deal with nested collections with a uniform API and giving you the opportunity to convert them to something else like a `Set`.
+- `options` - `object` with values for the following keys
+  - `schema` - schema definition that describes any nested models, to be used instead of the schema defined for the model. See the documentation for [`Schema`](#schema).
+
+```js
+const User = Vry.Model.create({
+  typeName: 'user',
+
+  defaults: {
+    name: 'New user',
+    email: null,
+    activated: false
+  }
+})
+
+User.parse = (attributes) => {
+  // Make sure names start with a capital
+  const name = attributes.get('name')
+
+  return attributes.set('name', name.charAt(0).toUpperCase() + name.slice(1))
+}
+
+const Post = Vry.Model.create({
+  typeName: 'post',
+
+  defaults: {
+    title: 'Untitled post',
+    body: '',
+    author: null
+  },
+
+  schema: {
+    author: User
+  }
+})
+
+const post = Post.factory({
+  title: 'Nice post',
+  author: {
+    name: 'homer'
+  }
+})
+
+console.log(post.get('user').get('name')) // "Homer"
+```
+
+### var serialized = model.serialize(instance, options)
+
+Returns the passed instance as a plain object. Defers the serialising of nested types to their `serialize` methods when defined (see [`Schema`](#schema)).
+
+- `instance` - (required) `Immutable.Iterable` that represents an instance created with `state.factory`
+- `options` - `object` with the following keys
+  - `omitMeta` - when falsey the identity meta data will be included in the result. Defaults to `true`
+  - `schema` - schema definition that describes any nested models, to be used instead of the schema defined for the model. See the documentation for [`Schema`](#schema).
+
+```js
+const user = User.factory({
+  name: 'Homer'
+})
+
+const plainUser = User.serialize(user)
+
+console.log(plainUser)
+// {
+//  name: 'Homer',
+//  email: null,
+//  activated: false
+// }
+```
+
+### var mergedInstance = model.merge(target, source)
+
+Merges anything from plain attributes to other instances (even of a different type) with an existing instance. Any attributes present in the `source` will override the ones in `target`, except for the meta data of `target`.
+
+- `target` - (required) `Immutable.Iterable` that represents an instance created with `model.factory` which will be the target of this merge
+- `source` - (required) `object` or `Immutable.Iterable` of attributes to be merged with the target
+
+```js
+const homer = User.factory({
+  name: 'Homer'
+})
+
+const activatedHomer = User.merge(homer, {
+  activated: true
+})
+
+console.log(activatedHomer)
+//  Immutable.Map {
+//    name: 'Homer',
+//    email: null,
+//    activated: true
+//  }
 ```
 
 ## Ref
