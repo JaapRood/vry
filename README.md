@@ -349,7 +349,7 @@ const Post = Vry.Model.create({
 })
 ```
 
-Note: All methods are bound to the state itself, so you can call them without binding them manually. For the unbound versions, see the prototype of the created type (`state.prototype`). Methods added after creation are not bound automatically.
+Note: All methods are bound to the model itself, so you can call them without binding them manually. For the unbound versions, see the prototype of the created type (`model.prototype`). Methods added after creation are not bound automatically.
 
 ### var isModelInstance = Model.isModel(maybeModel)
 
