@@ -88,10 +88,10 @@ In addition to `State`:
 
 # API
 
-- [`State`](#state)
-- [`Model`](#model)
-- [`Ref`](#ref)
-- [`Schema`](#schema)
+- [`State`](#state) - the most basic type generator in Vry
+- [`Model`](#model) - like `State` but with better support for nesting using a `Schema`
+- [`Schema`](#schema) - to specify how various types compose together
+- [`Ref`](#ref) - a `State` type to make refering to other state easier
 
 ## State
 
