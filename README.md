@@ -624,7 +624,7 @@ As we've implemented it so far the `Ref` points to something by use of a path. W
 
 ### var ref = Ref.create(path)
 
-Returns a `Immutable.Map` that represents the `Ref` with the specified path.
+Returns a `Immutable.Map` that represents the `Ref` with the specified path and also qualifies as a `State` instance.
 
 - `path` - (required) either a string, or an array / `Immutable.List` of strings, specifying the path to target
 
