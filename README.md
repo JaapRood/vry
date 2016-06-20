@@ -88,6 +88,11 @@ In addition to `State`:
 
 # API
 
+- [`State`](#state)
+- [`Model`](#model)
+- [`Ref`](#ref)
+- [`Schema`](#schema)
+
 ## State
 
 State is the most basic type in Vry. It allows you to create instances of a type with defaults in place, identify instances, merge them and serialize them back to plain javascript objects.
