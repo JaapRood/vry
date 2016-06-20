@@ -4,6 +4,7 @@ const _ = require('lodash')
 
 const Model = require('../lib/model')
 const Schema = require('../lib/schema')
+const Ref = require('../lib/ref')
 
 Test('Model', function(t) {
 	t.plan(2 + 1)
@@ -74,7 +75,7 @@ Test('Model.create', function(t) {
 })
 
 Test('model.factory - parse', function(t) {
-	t.plan(1 + 10 + 1)
+	t.plan(1 + 10 + 2 + 1)
 
 	const OtherModel = Model.create({
 		typeName: 'woo'
@@ -162,6 +163,16 @@ Test('model.factory - parse', function(t) {
 		t.ok(Immutable.OrderedSet([outputC, outputB, outputA]).equals(instance.get('nestedOrderedSet')), 'schema generated with `Schema.orderedSetOf` casts a value to an Immutable.OrderedSet')
 
 	}, 'accepts raw attributes in Seq')
+
+	t.doesNotThrow(() => {
+		const ref = Ref.create(['some', 'non-existing', 'path']) 
+
+		const instance = TestModel.factory({
+			a: ref
+		})
+
+		t.ok(ref.equals(instance.get('a')), 'when attribute value is a Ref instance it is not parsed any further')
+	}, 'accepts Ref instances as attribute values')
 
 	t.doesNotThrow(() => {
 		TestModel.factory.call(null)

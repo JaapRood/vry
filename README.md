@@ -517,7 +517,7 @@ A place to implement custom parsing behaviour. This method gets called by `type.
 
 Must return a `Immutable.Iterable`. Any `Immutable.Seq`s returned are converted into `Immutable.Map` and `Immutable.List`.
 
-By default it uses the `Schema` of the model to defer the parsing of other nested models to their own methods. 
+By default it uses the `Schema` of the model to defer the parsing of other nested models to their own methods. If the passed value is a `Ref` instance, the `Schema`'s `factory` is ignored.
 
 - `attributes` - (required) `Immutable.Map` of attributes. Any plain `object`s or `array`s are represented as `Immutable.Seq`s (`Keyed` and `Indexed` respectively), making it easy to deal with nested collections with a uniform API and giving you the opportunity to convert them to something else like a `Set`.
 - `options` - `object` with values for the following keys

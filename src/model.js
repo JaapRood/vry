@@ -15,6 +15,7 @@ const Factory = require('./factory')
 const Merge = require('./merge')
 const Props = require('./props')
 const Schema = require('./schema')
+const Ref = require('./ref')
 
 const internals = {}
 
@@ -91,7 +92,8 @@ internals.parse = function(attrs, options={}) {
 
 			if (
 				!_isFunction(type.factory) || 
-				Schema.instanceOfType(type, modelValue)
+				Schema.instanceOfType(type, modelValue) ||
+				Ref.instanceOf(modelValue)
 			) {
 				// if the value is already and instance of what we're trying to make it
 				// there is nothing for us to do
