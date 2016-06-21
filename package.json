@@ -1,7 +1,7 @@
 {
   "name": "vry",
-  "version": "1.2.0",
-  "description": "Data modeling with Immutable.js designed for use with Redux-like architectures",
+  "version": "2.0.0",
+  "description": "Define `Model` and `Collection` like types to manage your `Immutable` data structures in a functional way",
   "main": "lib/index.js",
   "scripts": {
     "test": "npm run compile && tape -r babel-register test/index.js | tap-spec",
@@ -23,13 +23,19 @@
   "license": "ISC",
   "dependencies": {
     "immutable": "^3.7.6",
+    "lodash.assign": "^4.0.9",
+    "lodash.every": "^4.4.0",
+    "lodash.foreach": "^4.3.0",
+    "lodash.functions": "^4.1.1",
     "lodash.isarray": "^3.0.4",
     "lodash.isfunction": "^3.0.6",
     "lodash.isplainobject": "^3.2.0",
     "lodash.isstring": "^4.0.1",
     "lodash.isundefined": "^3.0.1",
+    "lodash.keys": "^4.0.7",
     "lodash.uniqueid": "^3.0.0",
-    "shortid": "^2.2.4"
+    "shortid": "^2.2.4",
+    "warning": "^3.0.0"
   },
   "devDependencies": {
     "babel-preset-es2015": "^6.3.13",

@@ -3,13 +3,28 @@ var State = require('../lib/state');
 var Immutable = require('immutable');
 var _ = require('lodash');
 
+Test('State', function(t) {
+	t.plan(2 + 1)
+
+	t.doesNotThrow(function() {
+		const state = State('test-state', { a: 1, b: 2})
+
+		t.ok(state instanceof State, 'returns an instance of State')
+	}, 'accepts a name for the state and an object of defaults');
+
+	t.throws(function() {
+		const state = new State('test-state', { a: 1, b: 2})
+	}, 'does not allow being called as a constructor with `new` keyword')
+})
+
 Test('State.create', function(t) {
 	t.plan(2);
 
 	t.doesNotThrow(function() {
 		var state = State.create('test-state', { a: 1, b: 2});
 
-		t.ok(state instanceof State, 'returns an instance of State');
+		t.ok(state instanceof State, 'returns an instance of State')
+		// t.ok(_.isFunction(state.factory), 'return an object with a factory')
 	}, 'accepts a name for the state and an object of defaults');
 });
 
@@ -25,8 +40,30 @@ Test('State.isState', function(t) {
 	}, 'does not throw');
 });
 
+Test('state.typeName', function(t) {
+	t.plan(2)
+
+	const typeName = 'woo'
+	const TestState = State.create(typeName)
+
+	t.doesNotThrow(function() {
+		t.equal(TestState.typeName(), typeName, 'returns the name which was used to create it')
+	}, 'allows for no arguments to be passed')
+})
+
+Test('state.defaults', function(t) {
+	t.plan(2)
+
+	const defaults = { a: 1, nested: { b: 2 }}
+	const TestState = State.create('test', defaults)
+
+	t.doesNotThrow(function() {
+		t.ok(Immutable.Map(defaults).equals(TestState.defaults()), 'returns the state defaults cast to a Immutable.Map')
+	}, 'allows for no arguments to be passed')
+})
+	
 Test('state.factory', function(t) {
-	t.plan(6 + 3 + 2);
+	t.plan(6 + 3 + 2 + 1);
 
 
 	t.doesNotThrow(function() {
@@ -63,6 +100,11 @@ Test('state.factory', function(t) {
 
 		t.ok(childInstance.equals(instance.get('b')), 'returns instance with nested instances untouched');
 	}, 'accepts an object of attributes with instances of other states');
+
+	t.doesNotThrow(function() {
+		var state = State.create('test-state', { a: 1, b: 3});
+		state.factory.call(null)
+	}, 'can be called without context')
 });
 
 Test('state.factory - parse', function(t) {
@@ -149,9 +191,9 @@ Test('state.instanceOf', function(t) {
 	var instanceB = stateB.factory();
 
 	t.doesNotThrow(function() {
-		t.equal(stateA.instanceOf(instanceA), true, 'returns true for state instances created by it');
+		t.equal(stateA.instanceOf.call(null, instanceA), true, 'returns true for state instances created by it');
 		t.equal(stateA.instanceOf(instanceB), false, 'returns true for state instances created by other states');
-	}, 'accepts any value');
+	}, 'accepts any value and can be called without context');
 });
 
 Test('state.collectionOf', function(t) {
@@ -168,22 +210,22 @@ Test('state.collectionOf', function(t) {
 		var collectionB = Immutable.List([instanceB]);
 		var collectionMixed = Immutable.List([instanceA, instanceB]);
 
-		t.equal(stateA.collectionOf(collectionA), true, 'returns true for immutable collections that contain instances of that specific state');
+		t.equal(stateA.collectionOf.call(null, collectionA), true, 'returns true for immutable collections that contain instances of that specific state');
 		t.equal(stateA.collectionOf(collectionB), false, 'returns true for immutable collections that contain instances of other states');
 		t.equal(stateA.collectionOf(collectionMixed), false, 'returns false for immutable collections where instances of specific state or mixed with other values');
 
-	}, 'accepts any value');
+	}, 'accepts any value and can be called without context');
 });
 
 Test('state.serialize', function(t) {
-	t.plan(7 + 3);
+	t.plan(7 + 3 + 2 + 2);
 
 	var state = State.create('test-model', {});
 
 	var rawInstance = {
 		__cid: 'some-client-id',
 		a: 1,
-		b: 3,
+		b: [3],
 		c: {
 			ca: 10,
 			cb: 30
@@ -200,20 +242,87 @@ Test('state.serialize', function(t) {
 
 		t.ok(_.isObject(serialized), 'returns a plain object');
 		t.equal(rawInstance.a, serialized.a, 'primitive values are serialized as is');
-		t.deepEqual(rawInstance.a, serialized.a, 'Lists are serialized as plain arrays');
+		t.deepEqual(rawInstance.b, serialized.b, 'Lists are serialized as plain arrays');
 		t.deepEqual(rawInstance.c, serialized.c, 'Maps are serialized as plain objects');
 		t.deepEqual([], serialized.f, 'Sets are serialized as plain arrays');
 		t.ok(
 			_.isEqual(rawInstance.d, serialized.d) &&
 			_.isEqual(rawInstance.e, serialized.e)
 		, 'nested Iterables are serialized to their plain counterparts recursively');
-	}, 'accepts an immutable model instance');
+	}, 'accepts a State instance');
+
 
 	t.doesNotThrow(function() {
 		var serialized = state.serialize(instance);
-		var serializedIncluded = state.serialize(instance, false);
+		var serializedIncluded = state.serialize(instance, { omitMeta: false });
 
 		t.ok(_.isUndefined(serialized.__cid), 'serialized object does not contain cid by default');
+		t.equal(instance.get('__cid'), serializedIncluded.__cid, 'serialized object contains the client identifier of the instance when passing true for the `omitMeta` option');
+	}, 'accepts a State instance and options with a flag to omit meta data');
+
+	t.doesNotThrow(function() {
+		var serializedIncluded = state.serialize(instance, false); 
+
 		t.equal(instance.get('__cid'), serializedIncluded.__cid, 'serialized object contains the client identifier of the instance when passing true as the second argument');
-	}, 'accepts an immutable model and a flag to omit the model cid');
+	}, 'accepts a State instance and a flag to omit meta data (backwards compat for 1.x)');
+
+	t.doesNotThrow(function() {
+		const serialized = state.serialize(instance)
+		const noContext = state.serialize.call(null, instance)
+
+		t.deepEqual(serialized, noContext, 'returns the same when called out of context')
+
+	}, 'can be called without context')
 });
+
+Test('state.merge', function(t) {
+	t.plan(3 + 4 + 2 + 2)
+
+	const rawDefaults = {
+		c: 1
+	}
+
+	const TestState = State.create('test-state', rawDefaults)
+	const OtherState = State.create('other-state', rawDefaults)
+
+	const baseInstance = TestState.factory({
+		a: 1,
+		c: 3
+	})
+
+	const rawSource = {
+		a: 2,
+		b: 3
+	}
+
+	const sourceInstance = TestState.factory(rawSource)
+	const otherInstance = OtherState.factory(rawSource)
+
+	t.doesNotThrow(function() {
+		const mergedInstance = TestState.merge(baseInstance, rawSource)
+
+		t.ok(TestState.instanceOf(mergedInstance), 'returns an updated instance')
+		t.ok(mergedInstance.equals(baseInstance.merge(rawSource)), 'updated instance has attributes of source merged into instance')
+	}, 'accepts a State instance and a plain object of new attributes')
+
+	t.doesNotThrow(function() {
+		const mergedInstance = TestState.merge(baseInstance, sourceInstance)
+
+		t.ok(TestState.instanceOf(mergedInstance), 'returns an updated instance')
+		t.ok(mergedInstance.equals(baseInstance.merge(rawDefaults, rawSource)), 'updated instance has attributes of source merged into base')
+		t.equals(mergedInstance.get('__cid'), baseInstance.get('__cid'), 'updated instance has client identifer `__cid` from base')
+	}, 'accepts two State instances, a base and source')
+
+	t.doesNotThrow(function() {
+		const withContext = TestState.merge(baseInstance, sourceInstance)
+		const withoutContext = TestState.merge.call(null, baseInstance, sourceInstance)
+
+		t.ok(withContext.equals(withoutContext), 'returns the same when called out of context')
+	}, 'can be called without context')
+
+	t.doesNotThrow(function() {
+		const mergedInstance = TestState.merge(baseInstance, otherInstance)
+
+		t.ok(TestState.instanceOf(mergedInstance), 'returns an updated instance of the type of the base')
+	}, 'accepts a base and source instance with a different state type')
+})

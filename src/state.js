@@ -1,134 +1,86 @@
-var Immutable = require('immutable');
-var ShortId = require('shortid');
-var Invariant = require('invariant');
-var _isArray = require('lodash.isarray');
-var _isFunction = require('lodash.isfunction');
-var _isPlainObject = require('lodash.isplainobject');
-var _uniqueId = require('lodash.uniqueid');
+const Immutable = require('immutable')
+const Invariant = require('invariant')
+const _isPlainObject = require('lodash.isplainobject')
+const _isUndefined = require('lodash.isundefined')
+const _assign = require('lodash.assign')
+const _forEach = require('lodash.foreach')
+const _functions = require('lodash.functions')
+const Warning = require('warning')
 
-var internals = {};
+const Factory = require('./factory')
+const Identity = require('./identity')
+const Merge = require('./merge')
+const Props = require('./props')
 
-internals.props = {
-	cid: '__cid',
-	name: '__stateName'
-};
+const internals = {};
 
-internals.cidPrefix = `vry-${ShortId.generate()}-`;
-internals.generateCid = function() {
-	return _uniqueId(internals.cidPrefix);
-};
+internals.props = Props // lazy refactoring, boo
 
-exports = module.exports = internals.State = function(name, defaults={}) {
-	Invariant(name && (typeof name === "string"), 'Name is required to create a State');
+internals.State = function(...args) {
+	Invariant(!(this instanceof internals.State), 'State should not be called with `new`')
 
-	Invariant(
-		Immutable.Iterable.isIterable(defaults) || 
-		_isPlainObject(defaults)
-	, 'Defaults for state must be plain object or Immutable Iterable');
+	return exports.create(...args)
+}
 
-	defaults = Immutable.Map(defaults);
-
-	this._spec = {
-		name: name,
-		defaults: defaults
-	};
-};
+// being a state instance is the same as having an identity... for now
+exports.isState = Identity.hasIdentity
 
 exports.create = function(name, defaults) {
-	var state = new internals.State(name, defaults);
+	Invariant(name && (typeof name === "string"), 'Name is required to create a State');
+	Invariant(!defaults || Factory.isDefaults(defaults), 'Defaults for state must be plain object or Immutable Iterable');
 
-	return state;
-};
+	const identity = Identity.create(name)
+	const factory = Factory.create(defaults)
 
-internals.State.prototype.factory = function(rawEntity={}, options={}) {
-	Invariant(
-		Immutable.Iterable.isIterable(rawEntity) ||
-		_isPlainObject(rawEntity)
-	, 'Raw entity, when passed, must be a plain object or Immutable Iterable');
-	Invariant(_isPlainObject(options), 'options, when passed, must be a plain object');
-	Invariant(!options.parse || _isFunction(options.parse), 'The `parse` prop of the options, when passed, must be a function');
-
-	var parse = options.parse || this.parse;
-
-	// merge with with defaults and cast any nested native selections to Seqs
-	var entity = this._spec.defaults.merge(Immutable.Map(rawEntity)).map((value, key) => {
-		if (Immutable.Iterable.isIterable(value)) {
-			return value;
+	const statePrototype = _assign(
+		Object.create(internals.State.prototype), // makes `x instanceof State` work
+		identity,
+		factory,
+		Merge.create(identity, factory),
+		{
+			parse: internals.parse,
+			serialize: internals.serialize
 		}
+	)
 
-		if (_isArray(value)) {
-			return Immutable.Seq.Indexed(value);
-		}
+	var state = Object.create(statePrototype)
 
-		if (_isPlainObject(value)) {
-			return Immutable.Seq.Keyed(value);
-		}
+	// Binding each prototype method to the state itself. Unbound versions can still
+	// be used by accessing the prototype
+	_forEach(_functions(statePrototype), (methodName) => {
+		state[methodName] = statePrototype[methodName].bind(state)
+	})
 
-		return value;
-	});
-
-	var parsedEntity = parse(entity);
-
-	Invariant(Immutable.Iterable.isIterable(parsedEntity), 'Parse function has to return an Immutable Iterable');
-
-	var metaAttrs = {
-		[internals.props.cid]: internals.generateCid(),
-		[internals.props.name]: this._spec.name
-	};
-
-	return parsedEntity.toKeyedSeq().map(function(value, key) {
-		if (Immutable.Seq.isSeq(value)) {
-			// cast any Seqs into either Lists or Maps
-			let isIndexed = Immutable.Iterable.isIndexed(value)
-			let collection = isIndexed ? value.toList() : value.toMap();
-
-			return collection.map(function(value) {
-				return Immutable.fromJS(value);
-			});
-		} else {
-			// cast any nested collections to immutable data
-			return Immutable.fromJS(value);
-		}
-	}).toMap().merge(metaAttrs);
+	return state
 };
 
-internals.State.isState = function(state) {
-	return Immutable.Iterable.isIterable(state) &&
-		state.has(internals.props.cid) &&
-		state.has(internals.props.name);
-};
+internals.parse = (attrs) => {
+	return attrs
+}
 
-internals.State.prototype.instanceOf = function(state) {
-	return internals.State.isState(state) && 
-		state.get(internals.props.name) === this._spec.name;
-};
+internals.serialize = (state, optionsOrOmit) => {
+	var options;
 
-internals.State.prototype.collectionOf = function(maybeCollection) {
-	return Immutable.Iterable.isIterable(maybeCollection) &&
-		maybeCollection.every(this.instanceOf.bind(this));
-};
+	// TODO: remove in v3.0
+	Warning(!_isPlainObject(optionsOrOmit), 'The `omitMeta` flag as a second argument to `state.serialize` has been deprecated. Instead, pass an object of `options` with an `omitMeta` flag as the second argument')
 
-internals.State.prototype.parse = function(attrs) {
-	return attrs;
-};
+	if (_isPlainObject(optionsOrOmit)) {
+		options = optionsOrOmit
+	} else {
+		options = { omitMeta: optionsOrOmit }
+	}
 
-internals.State.prototype.serialize = function(state, omitCid=true) {
-	Invariant(internals.State.isState(state), 'State instance is required to serialize state');
+	Invariant(exports.isState(state) || Immutable.Iterable.isIterable(state), 'State instance or Immutable Iterable is required to serialize state');
+	Invariant(!options || _isPlainObject(options), 'Options, when passed, must be a plain object when serializing a state instance')
 
-	if (!omitCid) {
+	if (!options) options = {}
+	const omitMeta = !_isUndefined(options.omitMeta) ? options.omitMeta : true
+
+	if (!omitMeta) {
 		return state.toJS();
 	} else {
 		return state.filter((value, key) => key !== internals.props.cid).toJS();
 	}
-};
+}
 
-internals.State.prototype.merge = function(state, data) {
-	if (internals.State.isState(state)) {
-		data = data.remove(internals.props.cid);
-	} else {
-		delete data.cid;
-	}
-
-	return state.merge(data);
-};
-
+module.exports = _assign(internals.State, exports)
