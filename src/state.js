@@ -5,6 +5,7 @@ const _isUndefined = require('lodash.isundefined')
 const _assign = require('lodash.assign')
 const _forEach = require('lodash.foreach')
 const _functions = require('lodash.functions')
+const Warning = require('warning')
 
 const Factory = require('./factory')
 const Identity = require('./identity')
@@ -60,7 +61,9 @@ internals.parse = (attrs) => {
 internals.serialize = (state, optionsOrOmit) => {
 	var options;
 
-	// TODO: deprecate passing anything but options in v2
+	// TODO: remove in v3.0
+	Warning(!_isPlainObject(optionsOrOmit), 'The `omitMeta` flag as a second argument to `state.serialize` has been deprecated. Instead, pass an object of `options` with an `omitMeta` flag as the second argument')
+
 	if (_isPlainObject(optionsOrOmit)) {
 		options = optionsOrOmit
 	} else {
