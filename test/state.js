@@ -73,7 +73,7 @@ Test('state.factory', function(t) {
 		t.ok(Immutable.Map.isMap(instance), 'returns an immutable map');
 		t.deepEqual(_.pick(instance.toObject(), ['a','b']), { a: 1, b: 3}, 'returned map contains default attributes');
 
-		var name = instance.get('__stateName');
+		var name = instance.get('__typeName');
 		var cid = instance.get('__cid');
 
 		t.equal(name, 'test-state', 'returned map has a name to identify instances of this State from others')
