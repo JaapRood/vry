@@ -1,10 +1,16 @@
 # Vry
 
-### Warning! Experimental: cool, but in progress of being built and figured out
+Define `Model` and `Collection` like types to manage your `Immutable` data structures in a functional way
 
-Defining models using [Immutable.js][immutablejs], making it easier to define defaults, parsing, serialisation, merging, identifiying entities, etc. Models are stateless (anaemic), meaning the instances ([Immutable.Map](https://facebook.github.io/immutable-js/docs/#/Map)s) are passed to the Model's methods as the first argument and a new / updated version is returned. This makes them a great fit to implement [Redux reducers][redux].
+## Overview
 
-This documentation is still incredibly sparse, but I'm tired of copying / pasting this between projects. Having a look at or running the tests is probably your best bet to get an idea of how it's supposed to work. While experimental the basic behaviours have been developed throughout a sequence of various projects, so **semver will be respected**.
+[Immutable.js](https://facebook.github.io/immutable-js/) gives us great basic data constructs like `Map`, `List` and `Set`. Vry makes it straightforward to define types that house common logic for managing your immutable data. Types, generated of templates like `Model`, `Collection` and `Ref` are objects of stateless functions. This means that the instances ([Immutable.Map](https://facebook.github.io/immutable-js/docs/#/Map)s) are passed to the Type's methods as the first argument and a new / updated version is returned. This makes them a great fit to implement [Redux reducers][redux].
+
+The project is not yet complete, with constructs being added as I find a good way to express and abstract them. While still somewhat **experimental** the basic behaviours have been developed throughout a sequence of various projects, so **semver will be respected**.
+
+Documentation so far is limited to an [API reference](#api), which should be enough to get started, but I'd be happy to add guides.
+
+## Usage
 
 Use in your project:
 
@@ -12,7 +18,7 @@ Use in your project:
 npm install --save vry
 ```
 
-To run tests in vry root:
+To run tests, in vry root run:
 
 ```
 npm install --dev
@@ -71,7 +77,7 @@ const users = Immutable.List([homer]);
 const usersWithEmails = users.filter(User.hasEmail);
 ```
 
-### Motivation
+## Motivation
 
 Working with a single state tree for your application state (like [Redux][redux]) is great, but requires changes to be immutable. Using [Immutable.js][immutablejs] makes for a great fit, however, all you get are basic constructs like `Map`, `List`, `Set`. And while there is a `Record` construct, it still means that a lot of generic behaviour for entities has to be written by hand. Through a sequence of projects this represents the basics that keep coming back.
 
