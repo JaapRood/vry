@@ -83,11 +83,10 @@ Working with a single state tree for your application state (like [Redux][redux]
 
 ### Ideas for future expansion
 
-In addition to `State`:
+Among plenty of other ideas, these are constructs I've validated the need for within my own projects:
 
-- `Model` / `Schema` allowing for things like computed properties
-- `Graph` / `Ref` making it easier to model state as graphs instead of trees
 - `Collection` abstracting basic collection behaviour like storing lists of entities under multiple indexes, merging behaviour, etc.
+- `NormalisedGraph` with a standard way of storing and referring to instances of models
 
 [redux]: http://redux.js.org/
 [immutablejs]: https://facebook.github.io/immutable-js/
