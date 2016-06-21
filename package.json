@@ -1,7 +1,7 @@
 {
   "name": "vry",
-  "version": "1.2.0",
-  "description": "Data modeling with Immutable.js designed for use with Redux-like architectures",
+  "version": "2.0.0",
+  "description": "Define `Model` and `Collection` like types to manage your `Immutable` data structures in a functional way",
   "main": "lib/index.js",
   "scripts": {
     "test": "npm run compile && tape -r babel-register test/index.js | tap-spec",
