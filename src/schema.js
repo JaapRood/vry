@@ -1,4 +1,5 @@
 const Immutable = require('immutable')
+const Invariant = require('invariant')
 
 const _assign = require('lodash.assign')
 const _every = require('lodash.every')
@@ -9,6 +10,9 @@ const _isFunction = require('lodash.isfunction')
 const internals = {}
 
 internals.IterableSchema = function(iterable, itemSchema) {
+	Invariant(_isFunction(iterable), 'Iterable constructor required to create IterableSchema')
+	Invariant(exports.isType(itemSchema) || exports.isSchema(itemSchema), 'Item schema or type required to create IterableSchema')
+
 	_assign(this, {
 		getItemSchema: () => itemSchema,
 		factory: (val) => iterable(val),
