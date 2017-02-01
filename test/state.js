@@ -218,7 +218,7 @@ Test('state.collectionOf', function(t) {
 });
 
 Test('state.serialize', function(t) {
-	t.plan(7 + 3 + 2 + 2);
+	t.plan(7 + 5 + 2 + 2);
 
 	var state = State.create('test-model', {});
 
@@ -257,7 +257,9 @@ Test('state.serialize', function(t) {
 		var serializedIncluded = state.serialize(instance, { omitMeta: false });
 
 		t.ok(_.isUndefined(serialized.__cid), 'serialized object does not contain cid by default');
+		t.ok(_.isUndefined(serialized.__typeName), 'serialized object does not contain typename by default');
 		t.equal(instance.get('__cid'), serializedIncluded.__cid, 'serialized object contains the client identifier of the instance when passing true for the `omitMeta` option');
+		t.equal(instance.get('__typeName'), serializedIncluded.__typeName, 'serialized object contains the state type name of the instance when passing true for the `omitMeta` option')
 	}, 'accepts a State instance and options with a flag to omit meta data');
 
 	t.doesNotThrow(function() {
