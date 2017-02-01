@@ -79,7 +79,7 @@ internals.serialize = (state, optionsOrOmit) => {
 	if (!omitMeta) {
 		return state.toJS();
 	} else {
-		return state.filter((value, key) => key !== internals.props.cid).toJS();
+		return state.filter((value, key) => key !== internals.props.cid && key !== internals.props.name).toJS();
 	}
 }
 

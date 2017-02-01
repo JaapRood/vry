@@ -221,7 +221,7 @@ Test('model.schema', function(t) {
 })
 
 Test('model.serialize', function(t) {
-	t.plan(15 + 3 + 2 + 2)
+	t.plan(16 + 3 + 2 + 2)
 
 	const OtherModel = Model.create({
 		typeName: 'woo'
@@ -326,6 +326,7 @@ Test('model.serialize', function(t) {
 		t.ok(_.isArray(serialized.nestedSet), 'nested Sets are serialized as arrays')
 		t.ok(_.isArray(serialized.nestedOrderedSet), 'nested OrderedSets are serialized as arrays')
 		t.ok(_.isUndefined(serialized.__cid), 'the client side identifier is omitted by default')
+		t.ok(_.isUndefined(serialized.__typeName), 'the model type name is omitted by default')
 	}, 'accepts a model instance')
 
 	t.doesNotThrow(() => {		

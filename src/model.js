@@ -173,7 +173,7 @@ internals.serialize = function(model, options) {
 	if (!omitMeta) {
 		return partial.toJS();
 	} else {
-		return partial.filter((value, key) => key !== Props.cid).toJS();
+		return partial.filter((value, key) => key !== Props.cid && key !== Props.name).toJS();
 	}
 }
 
