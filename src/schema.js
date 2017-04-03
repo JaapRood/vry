@@ -9,14 +9,16 @@ const _isFunction = require('lodash.isfunction')
 
 const internals = {}
 
+internals.idenity = (val) => val
+
 internals.IterableSchema = function(iterable, itemSchema) {
 	Invariant(_isFunction(iterable), 'Iterable constructor required to create IterableSchema')
 	Invariant(exports.isType(itemSchema) || exports.isSchema(itemSchema), 'Item schema or type required to create IterableSchema')
 
 	_assign(this, {
 		getItemSchema: () => itemSchema,
-		factory: (val) => iterable(val),
-		serialize: (val) => val.toJS()
+		factory: (val) => iterable(val).map(itemSchema.factory || internals.idenity),
+		serialize: (val) => val.map(itemSchema.serialize || internals.idenity).toJS()
 	})
 }
 
