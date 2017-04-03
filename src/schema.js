@@ -17,8 +17,14 @@ internals.IterableSchema = function(iterable, itemSchema) {
 
 	_assign(this, {
 		getItemSchema: () => itemSchema,
-		factory: (val) => iterable(val).map(itemSchema.factory || internals.idenity),
-		serialize: (val) => val.map(itemSchema.serialize || internals.idenity).toJS()
+		factory: (val, ...otherArgs) => {
+			const factory = itemSchema.factory || internals.idenity
+			return iterable(val).map((item) => factory(item, ...otherArgs))
+		},
+		serialize: (val, ...otherArgs) => {
+			const serialize = itemSchema.serialize || internals.idenity
+			return val.map((item) => serialize(item, ...otherArgs)).toJS()
+		}
 	})
 }
 
