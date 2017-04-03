@@ -15,11 +15,20 @@ Test('Schema.isType', function(t) {
 })
 
 Test('Schema.listOf', function(t) {
-	t.plan(7)
+	t.plan(11)
+
+	const factoryOptions = { optionsFor: 'factory' }
+	const serializeOptions = { optionsFor: 'serialize' }
 
 	const itemType = {
-		factory: (val) => val + 'modified',
-		serialize: (val) => val.substr(0, val.lastIndexOf('modified')) + 'serialized'
+		factory: (val, options) => {
+			t.deepEqual(factoryOptions, options, 'options are forwarded to the item schema factory')
+			return val + 'modified'
+		},
+		serialize: (val, options) => {
+			t.deepEqual(serializeOptions, options, 'options are forwarded to the item schema serializer')
+			return val.substr(0, val.lastIndexOf('modified')) + 'serialized'
+		}
 	}
 	t.doesNotThrow(function() {
 		const listOfSchema = Schema.listOf(itemType)
@@ -31,12 +40,12 @@ Test('Schema.listOf', function(t) {
 		const expectedFactoryResult = Immutable.List(["somemodified", 'arraymodified'])
 		const expectedSerializeResult = ["someserialized", "arrayserialized"]
 
-		const factoryResult = listOfSchema.factory(source)
+		const factoryResult = listOfSchema.factory(source, factoryOptions)
 
 		t.ok(Immutable.List.isList(factoryResult), 'casts an array to a List')
 		t.ok(expectedFactoryResult.equals(factoryResult), 'maps each value of the array with the item schema `factory` method')
 
-		const serializeResult = listOfSchema.serialize(factoryResult)
+		const serializeResult = listOfSchema.serialize(factoryResult, serializeOptions)
 
 		t.ok(Array.isArray(serializeResult), 'serializes to an array')
 		t.deepEqual(serializeResult, expectedSerializeResult, 'maps each value of the List with the item schema `serialize` method')
@@ -44,11 +53,20 @@ Test('Schema.listOf', function(t) {
 })
 
 Test('Schema.setOf', function(t) {
-	t.plan(7)
+	t.plan(11)
+
+	const factoryOptions = { optionsFor: 'factory' }
+	const serializeOptions = { optionsFor: 'serialize' }
 
 	const itemType = {
-		factory: (val) => val + 'modified',
-		serialize: (val) => val.substr(0, val.lastIndexOf('modified')) + 'serialized'
+		factory: (val, options) => {
+			t.deepEqual(factoryOptions, options, 'options are forwarded to the item schema factory')
+			return val + 'modified'
+		},
+		serialize: (val, options) => {
+			t.deepEqual(serializeOptions, options, 'options are forwarded to the item schema serializer')
+			return val.substr(0, val.lastIndexOf('modified')) + 'serialized'
+		}
 	}
 	t.doesNotThrow(function() {
 		const setOfSchema = Schema.setOf(itemType)
@@ -60,12 +78,12 @@ Test('Schema.setOf', function(t) {
 		const expectedFactoryResult = Immutable.Set(["somemodified", 'arraymodified'])
 		const expectedSerializeResult = ["someserialized", "arrayserialized"]
 
-		const factoryResult = setOfSchema.factory(source)
+		const factoryResult = setOfSchema.factory(source, factoryOptions)
 
 		t.ok(Immutable.Set.isSet(factoryResult), 'casts an array to a Set')
 		t.ok(expectedFactoryResult.equals(factoryResult), 'maps each value of the array with the item schema `factory` method')
 
-		const serializeResult = setOfSchema.serialize(factoryResult)
+		const serializeResult = setOfSchema.serialize(factoryResult, serializeOptions)
 
 		t.ok(Array.isArray(serializeResult), 'serializes to an array')
 		t.deepEqual(serializeResult, expectedSerializeResult, 'maps each value of the Set with the item schema `serialize` method')
@@ -73,12 +91,22 @@ Test('Schema.setOf', function(t) {
 })
 
 Test('Schema.orderedSetOf', function(t) {
-	t.plan(7)
+	t.plan(11)
+
+	const factoryOptions = { optionsFor: 'factory' }
+	const serializeOptions = { optionsFor: 'serialize' }
 
 	const itemType = {
-		factory: (val) => val + 'modified',
-		serialize: (val) => val.substr(0, val.lastIndexOf('modified')) + 'serialized'
+		factory: (val, options) => {
+			t.deepEqual(factoryOptions, options, 'options are forwarded to the item schema factory')
+			return val + 'modified'
+		},
+		serialize: (val, options) => {
+			t.deepEqual(serializeOptions, options, 'options are forwarded to the item schema serializer')
+			return val.substr(0, val.lastIndexOf('modified')) + 'serialized'
+		}
 	}
+
 	t.doesNotThrow(function() {
 		const orderedSetOfSchema = Schema.orderedSetOf(itemType)
 
@@ -89,12 +117,12 @@ Test('Schema.orderedSetOf', function(t) {
 		const expectedFactoryResult = Immutable.OrderedSet(["somemodified", 'arraymodified'])
 		const expectedSerializeResult = ["someserialized", "arrayserialized"]
 
-		const factoryResult = orderedSetOfSchema.factory(source)
+		const factoryResult = orderedSetOfSchema.factory(source, factoryOptions)
 
 		t.ok(Immutable.OrderedSet.isOrderedSet(factoryResult), 'casts an array to an OrderedSet')
 		t.ok(expectedFactoryResult.equals(factoryResult), 'maps each value of the array with the item schema `factory` method')
 
-		const serializeResult = orderedSetOfSchema.serialize(factoryResult)
+		const serializeResult = orderedSetOfSchema.serialize(factoryResult, serializeOptions)
 
 		t.ok(Array.isArray(serializeResult), 'serializes to an array')
 		t.deepEqual(serializeResult, expectedSerializeResult, 'maps each value of the OrderedSet with the item schema `serialize` method')
