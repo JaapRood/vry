@@ -15,11 +15,11 @@ Test('Schema.isType', function(t) {
 })
 
 Test('Schema.listOf', function(t) {
-	t.plan(5)
+	t.plan(7)
 
 	const itemType = {
-		factory: _.identity,
-		serialize: _.identity
+		factory: (val) => val + 'modified',
+		serialize: (val) => val.substr(0, val.lastIndexOf('modified')) + 'serialized'
 	}
 	t.doesNotThrow(function() {
 		const listOfSchema = Schema.listOf(itemType)
@@ -28,18 +28,27 @@ Test('Schema.listOf', function(t) {
 		t.deepEqual(listOfSchema.getItemSchema(), itemType, 'returns item schema when calling `getItemSchema` method')
 
 		const source = ["some", "array"]
+		const expectedFactoryResult = Immutable.List(["somemodified", 'arraymodified'])
+		const expectedSerializeResult = ["someserialized", "arrayserialized"]
 
-		t.ok(Immutable.List(source).equals(listOfSchema.factory(source)), 'casts an array to a List')
-		t.deepEqual(listOfSchema.serialize(Immutable.List(source)), source, 'serializes to an array')
+		const factoryResult = listOfSchema.factory(source)
+
+		t.ok(Immutable.List.isList(factoryResult), 'casts an array to a List')
+		t.ok(expectedFactoryResult.equals(factoryResult), 'maps each value of the array with the item schema `factory` method')
+
+		const serializeResult = listOfSchema.serialize(factoryResult)
+
+		t.ok(Array.isArray(serializeResult), 'serializes to an array')
+		t.deepEqual(serializeResult, expectedSerializeResult, 'maps each value of the List with the item schema `serialize` method')
 	}, 'accepts an Iterable constructor and type definition')
 })
 
 Test('Schema.setOf', function(t) {
-	t.plan(5)
+	t.plan(7)
 
 	const itemType = {
-		factory: _.identity,
-		serialize: _.identity
+		factory: (val) => val + 'modified',
+		serialize: (val) => val.substr(0, val.lastIndexOf('modified')) + 'serialized'
 	}
 	t.doesNotThrow(function() {
 		const setOfSchema = Schema.setOf(itemType)
@@ -48,18 +57,27 @@ Test('Schema.setOf', function(t) {
 		t.deepEqual(setOfSchema.getItemSchema(), itemType, 'returns item schema when calling `getItemSchema` method')
 
 		const source = ["some", "array"]
+		const expectedFactoryResult = Immutable.Set(["somemodified", 'arraymodified'])
+		const expectedSerializeResult = ["someserialized", "arrayserialized"]
 
-		t.ok(Immutable.Set(source).equals(setOfSchema.factory(source)), 'casts an array to a Set')
-		t.deepEqual(setOfSchema.serialize(Immutable.Set(source)), source, 'serializes to an array')
+		const factoryResult = setOfSchema.factory(source)
+
+		t.ok(Immutable.Set.isSet(factoryResult), 'casts an array to a Set')
+		t.ok(expectedFactoryResult.equals(factoryResult), 'maps each value of the array with the item schema `factory` method')
+
+		const serializeResult = setOfSchema.serialize(factoryResult)
+
+		t.ok(Array.isArray(serializeResult), 'serializes to an array')
+		t.deepEqual(serializeResult, expectedSerializeResult, 'maps each value of the Set with the item schema `serialize` method')
 	}, 'accepts an Iterable constructor and type definition')
 })
 
 Test('Schema.orderedSetOf', function(t) {
-	t.plan(5)
+	t.plan(7)
 
 	const itemType = {
-		factory: _.identity,
-		serialize: _.identity
+		factory: (val) => val + 'modified',
+		serialize: (val) => val.substr(0, val.lastIndexOf('modified')) + 'serialized'
 	}
 	t.doesNotThrow(function() {
 		const orderedSetOfSchema = Schema.orderedSetOf(itemType)
@@ -68,9 +86,18 @@ Test('Schema.orderedSetOf', function(t) {
 		t.deepEqual(orderedSetOfSchema.getItemSchema(), itemType, 'returns item schema when calling `getItemSchema` method')
 
 		const source = ["some", "array"]
+		const expectedFactoryResult = Immutable.OrderedSet(["somemodified", 'arraymodified'])
+		const expectedSerializeResult = ["someserialized", "arrayserialized"]
 
-		t.ok(Immutable.OrderedSet(source).equals(orderedSetOfSchema.factory(source)), 'casts an array to a OrderedSet')
-		t.deepEqual(orderedSetOfSchema.serialize(Immutable.OrderedSet(source)), source, 'serializes to an array')
+		const factoryResult = orderedSetOfSchema.factory(source)
+
+		t.ok(Immutable.OrderedSet.isOrderedSet(factoryResult), 'casts an array to an OrderedSet')
+		t.ok(expectedFactoryResult.equals(factoryResult), 'maps each value of the array with the item schema `factory` method')
+
+		const serializeResult = orderedSetOfSchema.serialize(factoryResult)
+
+		t.ok(Array.isArray(serializeResult), 'serializes to an array')
+		t.deepEqual(serializeResult, expectedSerializeResult, 'maps each value of the OrderedSet with the item schema `serialize` method')
 	}, 'accepts an Iterable constructor and type definition')
 })
 

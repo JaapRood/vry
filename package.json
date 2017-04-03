@@ -1,6 +1,6 @@
 {
   "name": "vry",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Define `Model` and `Collection` like types to manage your `Immutable` data structures in a functional way",
   "main": "lib/index.js",
   "scripts": {
