@@ -328,3 +328,61 @@ Test('state.merge', function(t) {
 		t.ok(TestState.instanceOf(mergedInstance), 'returns an updated instance of the type of the base')
 	}, 'accepts a base and source instance with a different state type')
 })
+
+Test('state.mergeDeep', function(t) {
+	t.plan(3 + 4 + 2 + 2)
+
+	const rawDefaults = {
+		c: 1
+	}
+
+	const TestState = State.create('test-state', rawDefaults)
+	const OtherState = State.create('other-state', rawDefaults)
+
+	const baseInstance = TestState.factory({
+		a: 1,
+		c: 3,
+		d: {
+			e: 5
+		}
+	})
+
+	const rawSource = {
+		a: 2,
+		b: 3,
+		d: {
+			f: 6
+		}
+	}
+
+	const sourceInstance = TestState.factory(rawSource)
+	const otherInstance = OtherState.factory(rawSource)
+
+	t.doesNotThrow(function() {
+		const mergedInstance = TestState.mergeDeep(baseInstance, rawSource)
+
+		t.ok(TestState.instanceOf(mergedInstance), 'returns an updated instance')
+		t.ok(mergedInstance.equals(baseInstance.mergeDeep(rawSource)), 'updated instance has attributes of source deep merged into instance')
+	}, 'accepts a State instance and a plain object of new attributes')
+
+	t.doesNotThrow(function() {
+		const mergedInstance = TestState.mergeDeep(baseInstance, sourceInstance)
+
+		t.ok(TestState.instanceOf(mergedInstance), 'returns an updated instance')
+		t.ok(mergedInstance.equals(baseInstance.mergeDeep(rawDefaults, rawSource)), 'updated instance has attributes of source deep merged into base')
+		t.equals(mergedInstance.get('__cid'), baseInstance.get('__cid'), 'updated instance has client identifer `__cid` from base')
+	}, 'accepts two State instances, a base and source')
+
+	t.doesNotThrow(function() {
+		const withContext = TestState.mergeDeep(baseInstance, sourceInstance)
+		const withoutContext = TestState.mergeDeep.call(null, baseInstance, sourceInstance)
+
+		t.ok(withContext.equals(withoutContext), 'returns the same when called out of context')
+	}, 'can be called without context')
+
+	t.doesNotThrow(function() {
+		const mergedInstance = TestState.mergeDeep(baseInstance, otherInstance)
+
+		t.ok(TestState.instanceOf(mergedInstance), 'returns an updated instance of the type of the base')
+	}, 'accepts a base and source instance with a different state type')
+})
