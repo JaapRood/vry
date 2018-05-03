@@ -49,7 +49,10 @@ internals.mergeDeep = function(state, data) {
 			if (Schema.isType(definition)) {
 				let type = definition
 
-				if (!_isFunction(type.mergeDeep)) {
+				if (
+					!_isFunction(type.mergeDeep) || 
+					_isFunction(type.instanceOf) && !Schema.instanceOfType(type, currentValue)
+				) {
 					return nextValue
 				} else {
 					return type.mergeDeep(currentValue, nextValue)
