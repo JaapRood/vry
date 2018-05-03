@@ -24,6 +24,9 @@ internals.IterableSchema = function(iterable, itemSchema) {
 		serialize: (val, ...otherArgs) => {
 			const serialize = itemSchema.serialize || internals.idenity
 			return val.map((item) => serialize(item, ...otherArgs)).toJS()
+		},
+		mergeDeep: (current, next) => {
+			return iterable(next)
 		}
 	})
 }
