@@ -522,7 +522,7 @@ Test('model.mergeDeep', function(t) {
 		t.equal(merged.get('a'), outputA, 'value returned by mergeDeep of schema is used as value')
 		t.equal(merged.getIn(['nested', 'b']), outputB, 'nested schema is applied to nested attributes')
 		t.ok(OtherModel.instanceOf(merged.get('nestedModel')), 'Model definitions are valid type definitions for merging deep')
-		t.equal(merged.get('notInstance'), outputA, 'mergeDeep of schema definition is still applied when schema has instanceOf method that returns falsey')
+		t.equal(merged.get('notInstance'), inputA, 'next value is returned when definition schema has instanceOf method that returns falsey for existing value')
 		
 		t.ok(Immutable.List([outputA, outputB]).equals(merged.get('nestedList')), 'schema generated with `Schema.listOf` return only the new values as Lists merging is ambiguous')
 		t.ok(Immutable.Set([outputA, outputB]).equals(merged.get('nestedSet')), 'schema generated with `Schema.setOf` return only then new values as Sets merging is ambiguous')
