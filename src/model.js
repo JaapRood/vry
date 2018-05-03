@@ -44,24 +44,25 @@ exports.create = (spec) => {
 		defaults
 	} = spec
 
-	let schema = spec.schema
-
 	Invariant(!defaults || Factory.isDefaults(defaults), 'When specifying defaults in the model spec it must be a plain object or Immutable Iterable')
-	Invariant(!schema || Schema.isSchema(schema), 'When specificying a schema for a model, it must be a valid schema definition')
+	Invariant(!spec.schema || Schema.isSchema(spec.schema), 'When specificying a schema for a model, it must be a valid schema definition')
 	
-	if (!schema) schema = {}
+	if (!spec.schema) spec.schema = {}
 
 	const identity = Identity.create(typeName)
 	const factory = Factory.create(defaults)
-	const merge = Merge.create(identity, factory)
+	const schema = {
+		schema: () => spec.schema
+	}
+	const merge = Merge.create(identity, factory, schema)
 
 	const modelPrototype = _assign(
 		Object.create(internals.Model.prototype), // makes `x instanceof Model` work
 		identity,
 		factory,
 		merge,
+		schema,
 		{
-			schema: () => schema,
 			parse: internals.parse,
 			serialize: internals.serialize
 		}
@@ -161,7 +162,7 @@ internals.serialize = function(model, options) {
 			} else if (
 				Immutable.Iterable.isIndexed(modelValue) && _isArray(nestedSchema) ||
 				Immutable.Iterable.isKeyed(modelValue) && _isPlainObject(nestedSchema)
-		) {
+			) {
 				return this.serialize(modelValue, _assign({}, options, { schema: nestedSchema }))
 			}
 		}
