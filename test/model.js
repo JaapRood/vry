@@ -419,3 +419,114 @@ Test('model.merge', function(t) {
 	}, 'accepts a base and source instance with a different state type')
 })
 
+Test('model.mergeDeep', function(t) {
+	t.plan(2 + 8)
+
+	const OtherModel = Model.create({
+		typeName: 'woo'
+	})
+
+
+	const existingA = 'a'
+	const existingB = 'b'
+	const existingC = 'c'
+
+	const inputA = '1';
+	const inputB = '2';
+
+	const outputA = 'a1';
+	const outputB = 'b2';
+	const outputC = 'c3';
+
+	const schema = {
+		a: {
+			mergeDeep(existing, value, options) {
+				t.equal(existing, existingA, 'mergeDeep of type is called with the current value as first argument')
+				t.equal(value, inputA, 'mergeDeep of type is called with the to be merged value as the second argument')
+
+				return existing + value
+			}
+		},
+		nested: {
+			b: {
+				mergeDeep: (existing, value) => existing + value
+			}
+		},
+		multiple: [{
+			mergeDeep: () => outputC
+		}],
+		nestedModel: OtherModel,
+		notInstance: {
+			mergeDeep: (existing, value) => existing + value,
+			instanceOf() { return false }
+		},
+		notIncluded: {
+			mergeDeep() {
+				t.fail('not included properties should not be called')
+			}
+		},
+
+		nestedList: Schema.listOf({
+			factory: (val) => val
+		}),
+
+		nestedSet: Schema.setOf({
+			factory: (val) => val
+		}),
+
+		nestedOrderedSet: Schema.orderedSetOf({
+			factory: (val) => val
+		})
+	}
+
+	const TestModel = Model.create({
+		typeName: 'test-model',
+		schema: schema
+	})
+
+	const existing = TestModel.factory({
+		a: existingA,
+		nested: {
+			b: existingB
+		},
+		nestedModel: {
+			'a': existingA,
+			'b': existingB
+		},
+		notInstance: existingA,
+		notTouched: existingA,
+
+		multiple: ['values', 'array'],
+
+		nestedList: [existingA, existingB],
+		nestedSet: [existingA, existingB],
+		nestedOrderedSet: [existingC, existingB, existingA]
+	})
+
+	t.doesNotThrow(function() {
+		const merged = TestModel.mergeDeep(existing, {
+			a: inputA,
+			nested: {
+				b: inputB
+			},
+			nestedModel: {
+				'a': 'aaa',
+				'b': 'bbb'
+			},
+			notInstance: inputA,
+			nestedList: [outputA, outputB],
+			nestedSet: [outputA, outputB],
+			nestedOrderedSet: [outputC, outputB, outputA]
+		})
+
+		t.equal(merged.get('a'), outputA, 'value returned by mergeDeep of schema is used as value')
+		t.equal(merged.getIn(['nested', 'b']), outputB, 'nested schema is applied to nested attributes')
+		t.ok(OtherModel.instanceOf(merged.get('nestedModel')), 'Model definitions are valid type definitions for merging deep')
+		t.equal(merged.get('notInstance'), outputA, 'mergeDeep of schema definition is still applied when schema has instanceOf method that returns falsey')
+		
+		t.ok(Immutable.List([outputA, outputB]).equals(merged.get('nestedList')), 'schema generated with `Schema.listOf` return only the new values as Lists merging is ambiguous')
+		t.ok(Immutable.Set([outputA, outputB]).equals(merged.get('nestedSet')), 'schema generated with `Schema.setOf` return only then new values as Sets merging is ambiguous')
+		t.ok(Immutable.OrderedSet([outputC, outputB, outputA]).equals(merged.get('nestedOrderedSet')), 'schema generated with `Schema.orderedSetOf` return only then ew value as OrderedSets merging is ambiguous')
+	}, 'accepts a Model instance and a mergable data')
+})
+

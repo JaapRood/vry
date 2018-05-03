@@ -24,6 +24,9 @@ internals.IterableSchema = function(iterable, itemSchema) {
 		serialize: (val, ...otherArgs) => {
 			const serialize = itemSchema.serialize || internals.idenity
 			return val.map((item) => serialize(item, ...otherArgs)).toJS()
+		},
+		mergeDeep: (current, next) => {
+			return iterable(next)
 		}
 	})
 }
@@ -55,7 +58,8 @@ exports.isIterableSchema = function(maybeSchema) {
 exports.isType = function(maybeType) {
 	return !!(maybeType && (
 		_isFunction(maybeType.factory) ||
-		_isFunction(maybeType.serialize)
+		_isFunction(maybeType.serialize) ||
+		_isFunction(maybeType.mergeDeep)
 	))
 }
 
