@@ -58,7 +58,8 @@ exports.isIterableSchema = function(maybeSchema) {
 exports.isType = function(maybeType) {
 	return !!(maybeType && (
 		_isFunction(maybeType.factory) ||
-		_isFunction(maybeType.serialize)
+		_isFunction(maybeType.serialize) ||
+		_isFunction(maybeType.mergeDeep)
 	))
 }
 
