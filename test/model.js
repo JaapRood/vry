@@ -420,7 +420,7 @@ Test('model.merge', function(t) {
 })
 
 Test('model.mergeDeep', function(t) {
-	t.plan(3 + 8)
+	t.plan(2 + 8)
 
 	const OtherModel = Model.create({
 		typeName: 'woo'
@@ -443,14 +443,13 @@ Test('model.mergeDeep', function(t) {
 			mergeDeep(existing, value, options) {
 				t.equal(existing, existingA, 'mergeDeep of type is called with the current value as first argument')
 				t.equal(value, inputA, 'mergeDeep of type is called with the to be merged value as the second argument')
-				t.ok(_.isPlainObject(options), 'mergeDeep of type is valled with the options passed to serialize')
 
-				return outputA
+				return existing + value
 			}
 		},
 		nested: {
 			b: {
-				mergeDeep: () => outputB
+				mergeDeep: (existing, value) => existing + value
 			}
 		},
 		multiple: [{
@@ -458,7 +457,7 @@ Test('model.mergeDeep', function(t) {
 		}],
 		nestedModel: OtherModel,
 		notInstance: {
-			mergeDeep() { return 'never seen' },
+			mergeDeep: (existing, value) => existing + value,
 			instanceOf() { return false }
 		},
 		notIncluded: {
@@ -494,7 +493,7 @@ Test('model.mergeDeep', function(t) {
 			'a': existingA,
 			'b': existingB
 		},
-		notInstance: 'not-what-we-expect-it-to-be',
+		notInstance: existingA,
 		notTouched: existingA,
 
 		multiple: ['values', 'array'],
@@ -514,7 +513,7 @@ Test('model.mergeDeep', function(t) {
 				'a': 'aaa',
 				'b': 'bbb'
 			},
-			notInstance: 'wicked',
+			notInstance: inputA,
 			nestedList: [outputA, outputB],
 			nestedSet: [outputA, outputB],
 			nestedOrderedSet: [outputC, outputB, outputA]
@@ -523,7 +522,7 @@ Test('model.mergeDeep', function(t) {
 		t.equal(merged.get('a'), outputA, 'value returned by mergeDeep of schema is used as value')
 		t.equal(merged.getIn(['nested', 'b']), outputB, 'nested schema is applied to nested attributes')
 		t.ok(OtherModel.instanceOf(merged.get('nestedModel')), 'Model definitions are valid type definitions for merging deep')
-		t.equal(merged.get('notInstance'), existing.get('notInstance'), 'mergeDeep of schema definition not applied when schema has instanceOf method that returns falsey')
+		t.equal(merged.get('notInstance'), outputA, 'mergeDeep of schema definition is still applied when schema has instanceOf method that returns falsey')
 		
 		t.ok(Immutable.List([outputA, outputB]).equals(merged.get('nestedList')), 'schema generated with `Schema.listOf` return only the new values as Lists merging is ambiguous')
 		t.ok(Immutable.Set([outputA, outputB]).equals(merged.get('nestedSet')), 'schema generated with `Schema.setOf` return only then new values as Sets merging is ambiguous')
