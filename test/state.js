@@ -63,7 +63,7 @@ Test('state.defaults', function(t) {
 })
 	
 Test('state.factory', function(t) {
-	t.plan(6 + 3 + 2 + 1);
+	t.plan(6 + 3 + 2 + 1 + 3);
 
 
 	t.doesNotThrow(function() {
@@ -105,10 +105,23 @@ Test('state.factory', function(t) {
 		var state = State.create('test-state', { a: 1, b: 3});
 		state.factory.call(null)
 	}, 'can be called without context')
+
+	t.doesNotThrow(function() {
+		var state = State.create('test-state', { a: 1, b: 2})
+		var defaultsOption = { b: 3, c: {}, d: 5 }
+
+		var instance = state.factory({}, { defaults: defaultsOption })
+
+		t.deepEqual(
+			_.omit(instance.toJSON(), ['__typeName', '__cid']), 
+			defaultsOption
+		, 'returned instance uses defaults passed as an option')
+		t.notOk(instance.has('a'), 'when defaults option is passed, state level defaults are not used')
+	}, 'accepts an object of defaults as an option')
 });
 
 Test('state.factory - parse', function(t) {
-	t.plan(10);
+	t.plan(12);
 
 	
 
@@ -130,9 +143,18 @@ Test('state.factory - parse', function(t) {
 			f: Immutable.OrderedSet()
 		};
 
+		var testDefaults = {
+			a: 4
+		}
+
 		var instance = state.factory(rawInstance, {
-			parse: function(attrs) {
+			defaults: testDefaults,
+
+			parse: function(attrs, options) {
 				t.ok(Immutable.Map.isMap(attrs), 'parse function is called with attributes as a Map');
+				t.ok(_.isPlainObject(options), 'parse function is called with options');
+				t.deepEqual(options.defaults, testDefaults, 'options contains the defaults option passed to the factory');
+
 
 				return attrs.map(function(value, key) {
 					if (key === 'a') {
