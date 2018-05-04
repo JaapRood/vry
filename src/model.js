@@ -81,12 +81,15 @@ exports.create = (spec) => {
 
 internals.parse = function(attrs, options={}) {
 	const schema = options.schema || this.schema()
+	const modelDefaults = Immutable.Map(options.defaults || this.defaults())
 
 	return attrs.map((modelValue, modelProp) => {
 		const definition = Schema.getDefinition(schema, modelProp)
+		const defaults = modelDefaults.get(modelProp)
 
 		// if no type was defined for this prop there is nothing for us to do
 		if (!modelValue || !definition) return modelValue;
+		
 
 		if (Schema.isType(definition)) {
 			let type = definition
@@ -99,22 +102,29 @@ internals.parse = function(attrs, options={}) {
 				// if the value is already and instance of what we're trying to make it
 				// there is nothing for us to do
 				return modelValue
-			} 
-			
-			return type.factory(modelValue)
+			}
 
+			return type.factory(modelValue, { defaults })
 		} else if (Schema.isSchema(definition)) {
 			let nestedSchema = definition
 
 			if (nestedSchema.getItemSchema) { // could be an Iterable schema
 				let itemSchema = nestedSchema.getItemSchema()
 
-				return nestedSchema.factory(this.parse(modelValue, { schema: itemSchema }))
+				// I'm not sure why we did this parsing recursively like this, rather than letting the type itself
+				// deal with parsing itself. I'll leave it for while, in case we just didn't cover the use-case
+				// with a test properly.
+				// ---------------------
+				// 
+				// return nestedSchema.factory(this.parse(modelValue, { schema: itemSchema }), { defaults })
+				
+				return nestedSchema.factory(modelValue, { defaults })
+
 			} else if ( // support plain objects and arrays as they'll automatically get cast properly
 				Immutable.Iterable.isIndexed(modelValue) && _isArray(nestedSchema) ||
 				Immutable.Iterable.isKeyed(modelValue) && _isPlainObject(nestedSchema)
 			) {
-				return this.parse(modelValue, { schema: nestedSchema })
+				return this.parse(modelValue, { schema: nestedSchema, defaults })
 			} 
 		}
 

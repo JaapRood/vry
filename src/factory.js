@@ -1,6 +1,7 @@
 const Invariant = require('invariant')
 const Immutable = require('immutable')
 const ShortId = require('shortid')
+const _assign = require('lodash.assign')
 const _isPlainObject = require('lodash.isplainobject')
 const _isFunction = require('lodash.isfunction')
 const _isArray = require('lodash.isarray')
@@ -35,11 +36,13 @@ internals.factory = function(rawEntity={}, options={}) {
 	, 'Raw entity, when passed, must be a plain object or Immutable Iterable')
 	Invariant(_isPlainObject(options), 'options, when passed, must be a plain object')
 	Invariant(!options.parse || _isFunction(options.parse), 'The `parse` prop of the options, when passed, must be a function')
+	Invariant(!options.defaults || exports.isDefaults(options.defaults), 'The `defaults` prop of the options, when passed, must be plain object or Immutable Iterable')
 
 	var parse = options.parse || this.parse || ((attrs) => attrs)
+	var defaults = Immutable.Map(options.defaults || this.defaults() || {})
 
 	// merge with with defaults and cast any nested native selections to Seqs
-	var entity = this.defaults().merge(Immutable.Map(rawEntity)).map((value, key) => {
+	var entity = defaults.merge(Immutable.Map(rawEntity)).map((value, key) => {
 		if (Immutable.Iterable.isIterable(value)) {
 			return value
 		}
