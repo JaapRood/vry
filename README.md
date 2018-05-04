@@ -181,6 +181,7 @@ Returns a new instance (`Immutable.Map`) of the state type using the type's defa
 - `attributes` - `object` or any `Immutable.Iterable` of key-value pairs with which the type defaults will be overridden and amended. Nested `object`s and `array`s are converted to `Immutable.Map`and `Immutable.List` respectively, while any `Immutable.Iterable`s will be left untouched. 
 - `options` - `object` with the following keys
   - `parse` - `function` as described by `state.parse` that is to be used instead of `state.parse` to transform the passed in `attributes`.
+  - `defaults` - plain `object` or `Immutable.Iterable` of default key-value pairs that are used as the base of the instance, instead of those defined for the `State`.
 
 ```js
 const User = Vry.State.create('user', {
@@ -249,6 +250,8 @@ A place to implement custom parsing behaviour. This method gets called by `state
 Must return a `Immutable.Iterable`. Any `Immutable.Seq`s returned are converted into `Immutable.Map` and `Immutable.List`. By default this method is a no-op, simply returning the attributes passed in.
 
 - `attributes` - (required) `Immutable.Map` of attributes. Any plain `object`s or `array`s are represented as `Immutable.Seq`s (`Keyed` and `Indexed` respectively), making it easy to deal with nested collections with a uniform API and giving you the opportunity to convert them to something else like a `Set`.
+- `options` - `object` with the following keys
+  - `defaults` - plain `object` or `Immutable.Iterable` of default key-value pairs that are used as the base of the instance, instead of those defined for the `State`.
 
 ```js
 const User = Vry.State.create('user', {
@@ -257,7 +260,7 @@ const User = Vry.State.create('user', {
   activated: false
 })
 
-User.parse = (attributes) => {
+User.parse = (attributes, options) => {
   // Make sure names start with a capital
   const name = attributes.get('name')
 
@@ -429,6 +432,7 @@ Returns a new instance (`Immutable.Map`) of the model using the model's defaults
 - `attributes` - `object` or any `Immutable.Iterable` of key-value pairs with which the type defaults will be overridden and amended. The model's schema is used to handle the creation of nested types. Nested `object`s and `array`s are converted to `Immutable.Map`and `Immutable.List` respectively, while any `Immutable.Iterable`s will be left untouched. 
 - `options` - `object` with the following keys
   - `parse` - `function` as described by `state.parse` that is to be used instead of `state.parse` to transform the passed in `attributes`.
+  - `defaults` - plain `object` or `Immutable.Iterable` of default key-value pairs that are used as the base of the instance, instead of those defined for the `Model`. Nested values are propagated to nested models.
 
 ```js
 
