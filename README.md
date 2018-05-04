@@ -431,8 +431,9 @@ Returns a new instance (`Immutable.Map`) of the model using the model's defaults
 
 - `attributes` - `object` or any `Immutable.Iterable` of key-value pairs with which the type defaults will be overridden and amended. The model's schema is used to handle the creation of nested types. Nested `object`s and `array`s are converted to `Immutable.Map`and `Immutable.List` respectively, while any `Immutable.Iterable`s will be left untouched. 
 - `options` - `object` with the following keys
-  - `parse` - `function` as described by `state.parse` that is to be used instead of `state.parse` to transform the passed in `attributes`.
-  - `defaults` - plain `object` or `Immutable.Iterable` of default key-value pairs that are used as the base of the instance, instead of those defined for the `Model`. Nested values are propagated to nested models.
+  - `parse` - `function` as described by `state.parse` that is to be used instead of `model.parse` to transform the passed in `attributes`.
+  - `defaults` - plain `object` or `Immutable.Iterable` of default key-value pairs that are used as the base of the instance, instead of those defined for the model. Nested values are propagated to nested models.
+  - `schema` - schema definition that describes any nested models, to be used instead of the schema defined for the model. See the documentation for [`Schema`](#schema).
 
 ```js
 
@@ -531,6 +532,7 @@ By default it uses the `Schema` of the model to defer the parsing of other neste
 - `attributes` - (required) `Immutable.Map` of attributes. Any plain `object`s or `array`s are represented as `Immutable.Seq`s (`Keyed` and `Indexed` respectively), making it easy to deal with nested collections with a uniform API and giving you the opportunity to convert them to something else like a `Set`.
 - `options` - `object` with values for the following keys
   - `schema` - schema definition that describes any nested models, to be used instead of the schema defined for the model. See the documentation for [`Schema`](#schema).
+  - `defaults` - plain `object` or `Immutable.Iterable` of default key-value pairs that are used as the base of the instance, instead of those defined for the `Model`. Nested values are propagated to nested models.
 
 ```js
 const User = Vry.Model.create({
