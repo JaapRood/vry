@@ -15,14 +15,15 @@ Test('Schema.isType', function(t) {
 })
 
 Test('Schema.listOf', function(t) {
-	t.plan(11)
+	t.plan(13)
 
-	const factoryOptions = { optionsFor: 'factory' }
+	const factoryOptions = { optionsFor: 'factory', defaults: 'should-not-be-forwarded' }
 	const serializeOptions = { optionsFor: 'serialize' }
 
 	const itemType = {
 		factory: (val, options) => {
-			t.deepEqual(factoryOptions, options, 'options are forwarded to the item schema factory')
+			t.deepEqual(_.omit(factoryOptions, 'defaults'), options, 'options are forwarded to the item schema factory')
+			t.notOk(options.defaults, 'defaults option is not forwarded to the item schema factory')
 			return val + 'modified'
 		},
 		serialize: (val, options) => {
@@ -53,14 +54,15 @@ Test('Schema.listOf', function(t) {
 })
 
 Test('Schema.setOf', function(t) {
-	t.plan(11)
+	t.plan(13)
 
-	const factoryOptions = { optionsFor: 'factory' }
+	const factoryOptions = { optionsFor: 'factory', defaults: 'should-not-be-forwarded' }
 	const serializeOptions = { optionsFor: 'serialize' }
 
 	const itemType = {
 		factory: (val, options) => {
-			t.deepEqual(factoryOptions, options, 'options are forwarded to the item schema factory')
+			t.deepEqual(_.omit(factoryOptions, 'defaults'), options, 'options are forwarded to the item schema factory')
+			t.notOk(options.defaults, 'defaults option is not forwarded to the item schema factory')
 			return val + 'modified'
 		},
 		serialize: (val, options) => {
@@ -91,14 +93,15 @@ Test('Schema.setOf', function(t) {
 })
 
 Test('Schema.orderedSetOf', function(t) {
-	t.plan(11)
+	t.plan(13)
 
-	const factoryOptions = { optionsFor: 'factory' }
+	const factoryOptions = { optionsFor: 'factory', defaults: 'should-not-be-forwarded' }
 	const serializeOptions = { optionsFor: 'serialize' }
 
 	const itemType = {
 		factory: (val, options) => {
-			t.deepEqual(factoryOptions, options, 'options are forwarded to the item schema factory')
+			t.deepEqual(_.omit(factoryOptions, 'defaults'), options, 'options are forwarded to the item schema factory')
+			t.notOk(options.defaults, 'defaults option is not forwarded to the item schema factory')
 			return val + 'modified'
 		},
 		serialize: (val, options) => {

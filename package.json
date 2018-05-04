@@ -33,6 +33,7 @@
     "lodash.isstring": "^4.0.1",
     "lodash.isundefined": "^3.0.1",
     "lodash.keys": "^4.0.7",
+    "lodash.omit": "^4.5.0",
     "lodash.uniqueid": "^3.0.0",
     "shortid": "^2.2.4",
     "warning": "^3.0.0"

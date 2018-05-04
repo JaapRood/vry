@@ -6,10 +6,11 @@ const _every = require('lodash.every')
 const _isArray = require('lodash.isarray')
 const _isPlainObject = require('lodash.isplainobject')
 const _isFunction = require('lodash.isfunction')
+const _omit = require('lodash.omit')
 
 const internals = {}
 
-internals.idenity = (val) => val
+internals.identity = (val) => val
 
 internals.IterableSchema = function(iterable, itemSchema) {
 	Invariant(_isFunction(iterable), 'Iterable constructor required to create IterableSchema')
@@ -17,12 +18,12 @@ internals.IterableSchema = function(iterable, itemSchema) {
 
 	_assign(this, {
 		getItemSchema: () => itemSchema,
-		factory: (val, ...otherArgs) => {
-			const factory = itemSchema.factory || internals.idenity
-			return iterable(val).map((item) => factory(item, ...otherArgs))
+		factory: (val, options, ...otherArgs) => {
+			const factory = itemSchema.factory || internals.identity
+			return iterable(val).map((item) => factory(item, _omit(options, 'defaults'), ...otherArgs))
 		},
 		serialize: (val, ...otherArgs) => {
-			const serialize = itemSchema.serialize || internals.idenity
+			const serialize = itemSchema.serialize || internals.identity
 			return val.map((item) => serialize(item, ...otherArgs)).toJS()
 		},
 		mergeDeep: (current, next) => {
