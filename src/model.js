@@ -111,7 +111,15 @@ internals.parse = function(attrs, options={}) {
 			if (nestedSchema.getItemSchema) { // could be an Iterable schema
 				let itemSchema = nestedSchema.getItemSchema()
 
-				return nestedSchema.factory(this.parse(modelValue, { schema: itemSchema }), { defaults })
+				// I'm not sure why we did this parsing recursively like this, rather than letting the type itself
+				// deal with parsing itself. I'll leave it for while, in case we just didn't cover the use-case
+				// with a test properly.
+				// ---------------------
+				// 
+				// return nestedSchema.factory(this.parse(modelValue, { schema: itemSchema }), { defaults })
+				
+				return nestedSchema.factory(modelValue, { defaults })
+
 			} else if ( // support plain objects and arrays as they'll automatically get cast properly
 				Immutable.Iterable.isIndexed(modelValue) && _isArray(nestedSchema) ||
 				Immutable.Iterable.isKeyed(modelValue) && _isPlainObject(nestedSchema)
