@@ -75,12 +75,14 @@ Test('Model.create', function(t) {
 })
 
 Test('model.factory - parse', function(t) {
-	t.plan(1 + 10 + 2 + 1)
+	t.plan(3 + 1 + 1 + 10 + 2 + 1)
 
 	const OtherModel = Model.create({
 		typeName: 'woo'
 	})
 
+	const defaultA = 'a-default';
+	const defaultB = 'b-default';
 	const inputA = 'a';
 	const outputA = 'A';
 	const outputB = 'B';
@@ -89,15 +91,20 @@ Test('model.factory - parse', function(t) {
 
 	const schema = {
 		a: {
-			factory: (value) => {
+			factory: (value, options) => {
 				t.equal(inputA, value, 'factory is called with the untransformed value');
-				
+				t.ok(_.isPlainObject(options), 'factory is called with options')
+				t.equal(options.defaults, defaultA, 'default value for prop is forwarded to factory as defaults option')	
+
 				return outputA;
 			}
 		},
 		nested: {
 			b: {
-				factory: () => outputB
+				factory: (value, options) => {
+					t.equal(options.defaults, defaultB, 'nested schema factory is called with the nested default value')
+					return outputB
+				}
 			}
 		},
 		nestedArray: [{
@@ -109,8 +116,17 @@ Test('model.factory - parse', function(t) {
 			instanceOf() { return true }
 		},
 
+		iterableSchema: {
+			getItemSchema: () => ({factory: (val) => val }),
+			factory(val, options) {
+				t.deepEqual(options.defaults, [defaultA], 'default value for iterable prop is forwarded to its factory')
+
+				return Immutable.List(val)
+			}
+		},
+
 		nestedList: Schema.listOf({
-			factory: (val) => val
+			factory: (val, options) => val
 		}),
 
 		nestedSet: Schema.setOf({
@@ -128,6 +144,14 @@ Test('model.factory - parse', function(t) {
 	})
 
 	t.doesNotThrow(() => {
+		const defaults = {
+			a: defaultA,
+			nested: {
+				b: defaultB
+			},
+			nestedList: [defaultA],
+			iterableSchema: [defaultA]
+		}
 		const attrs = {
 			nonDefined: 'prop',
 			a: inputA,
@@ -145,7 +169,7 @@ Test('model.factory - parse', function(t) {
 			nestedOrderedSet: [outputC, outputB, outputA]
 		}
 
-		const instance = TestModel.factory(attrs)
+		const instance = TestModel.factory(attrs, { defaults })
 
 		t.equal(instance.get('a'), outputA, 'value returned by factory of schema is used as value')
 		t.equal(instance.get('nonDefined'), 'prop', 'parser ignores any attributes not defined in schema')
