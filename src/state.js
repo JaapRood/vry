@@ -58,17 +58,8 @@ internals.parse = (attrs) => {
 	return attrs
 }
 
-internals.serialize = (state, optionsOrOmit) => {
+internals.serialize = (state, options) => {
 	var options;
-
-	// TODO: remove in v3.0
-	Warning(!_isPlainObject(optionsOrOmit), 'The `omitMeta` flag as a second argument to `state.serialize` has been deprecated. Instead, pass an object of `options` with an `omitMeta` flag as the second argument')
-
-	if (_isPlainObject(optionsOrOmit)) {
-		options = optionsOrOmit
-	} else {
-		options = { omitMeta: optionsOrOmit }
-	}
 
 	Invariant(exports.isState(state) || Immutable.Iterable.isIterable(state), 'State instance or Immutable Iterable is required to serialize state');
 	Invariant(!options || _isPlainObject(options), 'Options, when passed, must be a plain object when serializing a state instance')
